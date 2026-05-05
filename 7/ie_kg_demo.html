@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Week 8 信息抽取与知识图谱系统</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --panel: rgba(255, 255, 255, 0.92);
+      --border: rgba(148, 163, 184, 0.28);
+      --text: #0f172a;
+      --muted: #475569;
+      --blue: #2563eb;
+      --blue-soft: #dbeafe;
+      --gold: #fde68a;
+      --green: #bbf7d0;
+      --purple: #e9d5ff;
+      --shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 24%),
+        radial-gradient(circle at top right, rgba(14, 165, 233, 0.12), transparent 26%),
+        linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
+      min-height: 100vh;
+    }
+
+    .page {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 28px 20px 36px;
+    }
+
+    .hero {
+      margin-bottom: 18px;
+    }
+
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1.15;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 880px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.8;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 20px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+    }
+
+    .sidebar {
+      padding: 22px 18px;
+      position: sticky;
+      top: 20px;
+      align-self: start;
+    }
+
+    .sidebar h2,
+    .content h2 {
+      margin: 0 0 14px;
+      font-size: 18px;
+    }
+
+    .sidebar .block + .block {
+      margin-top: 20px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    select,
+    textarea,
+    button,
+    input[type="checkbox"] {
+      font: inherit;
+    }
+
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid rgba(148, 163, 184, 0.34);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.94);
+      color: var(--text);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: rgba(37, 99, 235, 0.5);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    }
+
+    select {
+      padding: 12px 14px;
+      margin-bottom: 10px;
+    }
+
+    textarea {
+      min-height: 170px;
+      resize: vertical;
+      padding: 16px 18px;
+      line-height: 1.8;
+    }
+
+    .button-row {
+      display: grid;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 16px;
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: transform 0.16s ease, opacity 0.16s ease, box-shadow 0.16s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    .primary {
+      background: linear-gradient(135deg, #1d4ed8, #2563eb);
+      color: #fff;
+      box-shadow: 0 14px 28px rgba(37, 99, 235, 0.22);
+    }
+
+    .ghost {
+      background: rgba(37, 99, 235, 0.08);
+      color: var(--blue);
+    }
+
+    .check {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .check input {
+      width: 18px;
+      height: 18px;
+    }
+
+    .tips {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.8;
+      font-size: 14px;
+    }
+
+    .content {
+      display: grid;
+      gap: 18px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .stat {
+      padding: 20px 20px 16px;
+    }
+
+    .stat .value {
+      font-size: 34px;
+      font-weight: 800;
+      margin-top: 6px;
+    }
+
+    .stat .label {
+      color: var(--muted);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .editor {
+      padding: 22px;
+    }
+
+    .section-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 18px;
+    }
+
+    .section {
+      padding: 22px;
+    }
+
+    .section h3 {
+      margin: 0 0 14px;
+      font-size: 18px;
+    }
+
+    .mono-box,
+    .highlight-box {
+      min-height: 210px;
+      border-radius: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.24);
+      background: linear-gradient(180deg, rgba(248, 250, 252, 0.92), rgba(255, 255, 255, 1));
+      padding: 18px;
+      line-height: 1.9;
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    .mono-box {
+      font-family: "Consolas", "Courier New", monospace;
+      font-size: 14px;
+    }
+
+    .entity {
+      display: inline-block;
+      padding: 2px 8px;
+      margin: 2px 4px 2px 0;
+      border-radius: 999px;
+      color: #111827;
+      font-weight: 600;
+    }
+
+    .entity-tag {
+      margin-left: 6px;
+      padding: 1px 7px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.12);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1px solid rgba(15, 23, 42, 0.12);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.22);
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+      font-size: 14px;
+    }
+
+    th {
+      background: rgba(37, 99, 235, 0.06);
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .hint {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-left: 4px solid var(--blue);
+      background: var(--blue-soft);
+      color: #1e3a8a;
+      border-radius: 14px;
+      line-height: 1.8;
+      font-size: 14px;
+    }
+
+    .graph-wrap {
+      padding: 22px;
+    }
+
+    .graph-box {
+      border-radius: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.24);
+      background:
+        radial-gradient(circle at 20% 20%, rgba(37, 99, 235, 0.07), transparent 18%),
+        radial-gradient(circle at 80% 30%, rgba(14, 165, 233, 0.08), transparent 18%),
+        linear-gradient(180deg, rgba(248, 250, 252, 0.94), rgba(255, 255, 255, 1));
+      height: 560px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #graphSvg {
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+    }
+
+    .graph-caption {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .empty {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .footer {
+      padding: 20px 22px;
+    }
+
+    .footer ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    @media (max-width: 1100px) {
+      .layout,
+      .section-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .page {
+        padding: 18px 12px 24px;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .hero h1 {
+        font-size: 26px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="hero">
+      <h1>Week 8 信息抽取与知识图谱构建系统</h1>
+      <p>
+        HTML 单文件版本，适合直接展示作业。它把命名实体识别（NER）、BIO 序列标注、关系抽取（RE）和知识图谱可视化放到同一页面中，
+        默认使用规则增强抽取，方便课堂演示，也便于你后续替换成 spaCy 或大模型接口。
+      </p>
+    </div>
+
+    <div class="layout">
+      <aside class="panel sidebar">
+        <div class="block">
+          <h2>演示控制台</h2>
+          <label for="sampleSelect">示例文本</label>
+          <select id="sampleSelect"></select>
+          <div class="button-row">
+            <button class="ghost" id="loadSampleBtn">加载示例</button>
+            <button class="primary" id="extractBtn">抽取信息</button>
+          </div>
+          <label class="check">
+            <input type="checkbox" id="bioToggle">
+            查看底层标注（BIO 序列）
+          </label>
+        </div>
+
+        <div class="block">
+          <h2>作业观察提示</h2>
+          <ul class="tips">
+            <li>模块 1：比较实体高亮和 BIO 标注。</li>
+            <li>模块 2：观察 Subject / Predicate / Object 是否合理。</li>
+            <li>模块 3：体会线性文本如何变成网状结构。</li>
+            <li>若出现嵌套实体，当前主视图仍会优先保留 flat entity 展示。</li>
+          </ul>
+        </div>
+      </aside>
+
+      <main class="content">
+        <div class="stats">
+          <section class="panel stat">
+            <div class="label">Entities</div>
+            <div class="value" id="entityCount">0</div>
+          </section>
+          <section class="panel stat">
+            <div class="label">Relations</div>
+            <div class="value" id="relationCount">0</div>
+          </section>
+          <section class="panel stat">
+            <div class="label">Nested Candidates</div>
+            <div class="value" id="nestedCount">0</div>
+          </section>
+        </div>
+
+        <section class="panel editor">
+          <h2>文本输入</h2>
+          <textarea id="inputText" placeholder="例如：Steve Jobs founded Apple in California. Apple is headquartered in Cupertino."></textarea>
+        </section>
+
+        <div class="section-grid">
+          <section class="panel section">
+            <h3>模块 1：NER 与 BIO</h3>
+            <div id="textView" class="highlight-box"></div>
+            <div class="legend">
+              <div class="legend-item"><span class="dot" style="background:#fde68a"></span>Person / PER</div>
+              <div class="legend-item"><span class="dot" style="background:#bfdbfe"></span>Organization / ORG</div>
+              <div class="legend-item"><span class="dot" style="background:#bbf7d0"></span>Location / LOC</div>
+              <div class="legend-item"><span class="dot" style="background:#e9d5ff"></span>Other / MISC</div>
+            </div>
+          </section>
+
+          <section class="panel section">
+            <h3>实体结果与嵌套观察</h3>
+            <div id="entityTableWrap"></div>
+            <div class="hint" id="nestedHint">
+              BIO 对平铺实体（flat entity）很直观，但对嵌套实体（nested entity）的表达能力有限。
+            </div>
+            <div id="nestedTableWrap" style="margin-top:14px;"></div>
+          </section>
+        </div>
+
+        <section class="panel section">
+          <h3>模块 2：关系抽取</h3>
+          <div id="relationTableWrap"></div>
+          <div class="hint">
+            关系抽取可以理解为：在已识别出的实体节点之间，预测是否存在某种语义边，例如
+            <strong>FOUNDER_OF</strong>、<strong>LOCATED_IN</strong>、<strong>CEO_OF</strong>。
+          </div>
+        </section>
+
+        <section class="panel graph-wrap">
+          <h2>模块 3：知识图谱交互可视化</h2>
+          <div class="graph-box">
+            <svg id="graphSvg" viewBox="0 0 960 560" preserveAspectRatio="none"></svg>
+          </div>
+          <div class="graph-caption">支持鼠标拖拽节点。边上显示关系标签，不同实体类型使用不同颜色。</div>
+        </section>
+
+        <section class="panel footer">
+          <h2>实验报告和截图建议</h2>
+          <ul>
+            <li>截图 1：彩色实体高亮，突出不同实体类型。</li>
+            <li>截图 2：切换到 BIO 模式，展示 token 与 B/I/O 标签。</li>
+            <li>截图 3：关系三元组表格，展示 Subject / Predicate / Object。</li>
+            <li>截图 4：知识图谱图，体现“文本到图结构”的转换。</li>
+          </ul>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const SAMPLE_TEXTS = {
+      "英文商业新闻": "Steve Jobs founded Apple in California. Apple is headquartered in Cupertino. Tim Cook is the CEO of Apple.",
+      "中文商业新闻": "雷军创办了小米集团，小米集团总部位于北京。张一鸣创建了字节跳动，字节跳动位于北京。",
+      "嵌套实体示例": "University of California, Los Angeles is located in Los Angeles. 该机构与OpenAI保持合作。",
+      "中英混合示例": "OpenAI位于San Francisco。Sam Altman leads OpenAI. Steve Jobs founded Apple, and Apple is headquartered in Cupertino."
+    };
+
+    const ENTITY_COLORS = {
+      PER: "#fde68a",
+      ORG: "#bfdbfe",
+      LOC: "#bbf7d0",
+      MISC: "#e9d5ff"
+    };
+
+    const ENTITY_PRIORITY = {
+      ORG: 4,
+      PER: 3,
+      LOC: 2,
+      MISC: 1
+    };
+
+    const EN_PERSONS = ["Steve Jobs", "Tim Cook", "Bill Gates", "Elon Musk", "Sam Altman", "Satya Nadella"];
+    const EN_ORGS = ["Apple", "Microsoft", "OpenAI", "Google", "Meta", "Tesla", "ByteDance", "University of California, Los Angeles"];
+    const EN_LOCS = ["California", "Cupertino", "Seattle", "San Francisco", "Los Angeles", "Beijing", "Shanghai"];
+    const ZH_PERSONS = ["雷军", "张一鸣", "马化腾", "任正非"];
+    const ZH_ORGS = ["小米集团", "字节跳动", "腾讯", "清华大学", "北京大学", "上海财经大学"];
+    const ZH_LOCS = ["北京", "上海", "深圳", "杭州", "广州", "中国"];
+
+    const sampleSelect = document.getElementById("sampleSelect");
+    const loadSampleBtn = document.getElementById("loadSampleBtn");
+    const extractBtn = document.getElementById("extractBtn");
+    const bioToggle = document.getElementById("bioToggle");
+    const inputText = document.getElementById("inputText");
+
+    const entityCount = document.getElementById("entityCount");
+    const relationCount = document.getElementById("relationCount");
+    const nestedCount = document.getElementById("nestedCount");
+    const textView = document.getElementById("textView");
+    const entityTableWrap = document.getElementById("entityTableWrap");
+    const nestedTableWrap = document.getElementById("nestedTableWrap");
+    const relationTableWrap = document.getElementById("relationTableWrap");
+    const graphSvg = document.getElementById("graphSvg");
+
+    let currentResult = null;
+
+    init();
+
+    function init() {
+      Object.keys(SAMPLE_TEXTS).forEach((name) => {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        sampleSelect.appendChild(option);
+      });
+
+      sampleSelect.value = "英文商业新闻";
+      inputText.value = SAMPLE_TEXTS["英文商业新闻"];
+
+      loadSampleBtn.addEventListener("click", () => {
+        inputText.value = SAMPLE_TEXTS[sampleSelect.value];
+        runExtraction();
+      });
+
+      extractBtn.addEventListener("click", runExtraction);
+      bioToggle.addEventListener("change", () => {
+        if (currentResult) {
+          renderText(currentResult);
+        }
+      });
+
+      runExtraction();
+    }
+
+    function runExtraction() {
+      const text = inputText.value.trim();
+      if (!text) {
+        currentResult = emptyResult("");
+        renderAll(currentResult);
+        return;
+      }
+      currentResult = extractInformation(text);
+      renderAll(currentResult);
+    }
+
+    function emptyResult(text) {
+      return {
+        text,
+        entities: [],
+        allCandidates: [],
+        nestedPairs: [],
+        relations: [],
+        tokenTags: []
+      };
+    }
+
+    function extractInformation(text) {
+      const allCandidates = collectEntityCandidates(text);
+      const nestedPairs = buildNestedPairs(allCandidates);
+      const entities = flattenEntities(allCandidates);
+      const relations = extractRelations(text, entities);
+      const tokenTags = buildBioTags(text, entities);
+      return { text, entities, allCandidates, nestedPairs, relations, tokenTags };
+    }
+
+    function collectEntityCandidates(text) {
+      let candidates = [];
+      candidates = candidates.concat(scanLexicon(text, EN_PERSONS, "PER"));
+      candidates = candidates.concat(scanLexicon(text, EN_ORGS, "ORG"));
+      candidates = candidates.concat(scanLexicon(text, EN_LOCS, "LOC"));
+      candidates = candidates.concat(scanLexicon(text, ZH_PERSONS, "PER"));
+      candidates = candidates.concat(scanLexicon(text, ZH_ORGS, "ORG"));
+      candidates = candidates.concat(scanLexicon(text, ZH_LOCS, "LOC"));
+
+      const orgPatterns = [
+        /\b(?:[A-Z][A-Za-z&.\-]+(?:\s+[A-Z][A-Za-z&.\-]+){0,4})\s+(?:University|College|Institute|Bank|Group|Company|Corporation|Corp|Inc|Ltd)\b/g
+      ];
+      const locPatterns = [
+        /[\u4e00-\u9fff]{2,}(?:市|省|县|区|国)/g,
+        /\b(?:New York|Los Angeles|San Francisco|California|Beijing|Shanghai|Seattle|Cupertino)\b/g
+      ];
+      const personPatterns = [
+        /\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,2}\b/g
+      ];
+
+      candidates = candidates.concat(scanPatterns(text, orgPatterns, "ORG"));
+      candidates = candidates.concat(scanPatterns(text, locPatterns, "LOC"));
+      candidates = candidates.concat(scanPatterns(text, personPatterns, "PER"));
+
+      return filterEntities(dedupeEntities(candidates));
+    }
+
+    function scanLexicon(text, lexicon, label) {
+      const entities = [];
+      lexicon.forEach((term) => {
+        let startIndex = 0;
+        while (startIndex < text.length) {
+          const index = text.indexOf(term, startIndex);
+          if (index === -1) {
+            break;
+          }
+          entities.push({ text: term, label, start: index, end: index + term.length });
+          startIndex = index + Math.max(term.length, 1);
+        }
+      });
+      return entities;
+    }
+
+    function scanPatterns(text, patterns, label) {
+      const entities = [];
+      patterns.forEach((pattern) => {
+        pattern.lastIndex = 0;
+        let match;
+        while ((match = pattern.exec(text)) !== null) {
+          const value = normalizeSpan(match[0]);
+          if (!value) {
+            continue;
+          }
+          const rawIndex = match.index;
+          const trimLeft = match[0].indexOf(value);
+          const start = rawIndex + (trimLeft < 0 ? 0 : trimLeft);
+          entities.push({ text: value, label, start, end: start + value.length });
+        }
+      });
+      return entities;
+    }
+
+    function normalizeSpan(value) {
+      return value.replace(/^[\s,.;:，。；：()[\]{}"'`]+|[\s,.;:，。；：()[\]{}"'`]+$/g, "");
+    }
+
+    function dedupeEntities(entities) {
+      const sorted = [...entities].sort((a, b) => {
+        if (a.start !== b.start) return a.start - b.start;
+        if (a.end !== b.end) return a.end - b.end;
+        const priorityDiff = (ENTITY_PRIORITY[b.label] || 0) - (ENTITY_PRIORITY[a.label] || 0);
+        if (priorityDiff !== 0) return priorityDiff;
+        return a.text.localeCompare(b.text);
+      });
+      const seen = new Set();
+      const unique = [];
+      sorted.forEach((entity) => {
+        const key = `${entity.start}|${entity.end}|${entity.label}|${entity.text}`;
+        if (!seen.has(key) && entity.text) {
+          seen.add(key);
+          unique.push(entity);
+        }
+      });
+      return unique;
+    }
+
+    function filterEntities(entities) {
+      const blockedPersonTerms = new Set([...EN_ORGS, ...EN_LOCS, ...ZH_ORGS, ...ZH_LOCS]);
+      const orgSuffixes = ["University", "College", "Institute", "Bank", "Group", "Company", "Corporation"];
+      return entities.filter((entity) => {
+        if (entity.label === "PER") {
+          if (blockedPersonTerms.has(entity.text)) {
+            return false;
+          }
+          if (orgSuffixes.some((suffix) => entity.text.includes(suffix))) {
+            return false;
+          }
+          if (entity.text.includes(" of ")) {
+            return false;
+          }
+        }
+        return true;
+      });
+    }
+
+    function buildNestedPairs(entities) {
+      const pairs = [];
+      entities.forEach((outer) => {
+        entities.forEach((inner) => {
+          if (outer === inner) return;
+          if (outer.start <= inner.start && inner.end <= outer.end) {
+            if (outer.start < inner.start || inner.end < outer.end) {
+              pairs.push([outer, inner]);
+            }
+          }
+        });
+      });
+      const seen = new Set();
+      return pairs.filter(([outer, inner]) => {
+        const key = `${outer.start}|${outer.end}|${outer.label}|${inner.start}|${inner.end}|${inner.label}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+
+    function flattenEntities(entities) {
+      const ranked = [...entities].sort((a, b) => {
+        const lenDiff = (b.end - b.start) - (a.end - a.start);
+        if (lenDiff !== 0) return lenDiff;
+        const priorityDiff = (ENTITY_PRIORITY[b.label] || 0) - (ENTITY_PRIORITY[a.label] || 0);
+        if (priorityDiff !== 0) return priorityDiff;
+        return a.start - b.start;
+      });
+      const occupied = [];
+      const selected = [];
+      ranked.forEach((entity) => {
+        const hasOverlap = occupied.some(([left, right]) => overlaps(entity.start, entity.end, left, right));
+        if (!hasOverlap) {
+          occupied.push([entity.start, entity.end]);
+          selected.push(entity);
+        }
+      });
+      return selected.sort((a, b) => a.start - b.start || a.end - b.end);
+    }
+
+    function overlaps(startA, endA, startB, endB) {
+      return Math.max(startA, startB) < Math.min(endA, endB);
+    }
+
+    function tokenize(text) {
+      const pattern = /[\u4e00-\u9fff]|[A-Za-z]+(?:'[A-Za-z]+)?|\d+(?:\.\d+)?|[^\w\s]/gu;
+      const tokens = [];
+      let match;
+      while ((match = pattern.exec(text)) !== null) {
+        tokens.push({
+          token: match[0],
+          start: match.index,
+          end: match.index + match[0].length
+        });
+      }
+      return tokens;
+    }
+
+    function buildBioTags(text, entities) {
+      return tokenize(text).map((token) => {
+        let tag = "O";
+        for (const entity of entities) {
+          if (overlaps(token.start, token.end, entity.start, entity.end)) {
+            const prefix = token.start === entity.start ? "B" : "I";
+            tag = `${prefix}-${entity.label}`;
+            break;
+          }
+        }
+        return { ...token, tag };
+      });
+    }
+
+    function splitSentences(text) {
+      const sentences = [];
+      const pattern = /[^。！？!?;\n]+[。！？!?;\n]*/g;
+      let match;
+      while ((match = pattern.exec(text)) !== null) {
+        const raw = match[0];
+        const sentence = raw.trim();
+        if (!sentence) continue;
+        const offset = raw.indexOf(sentence);
+        const start = match.index + (offset < 0 ? 0 : offset);
+        sentences.push({ text: sentence, start, end: start + sentence.length });
+      }
+      if (!sentences.length && text.trim()) {
+        const sentence = text.trim();
+        const start = text.indexOf(sentence);
+        sentences.push({ text: sentence, start, end: start + sentence.length });
+      }
+      return sentences;
+    }
+
+    function chooseEntity(entities, allowedTypes, before = null, after = null) {
+      let candidates = entities.filter((entity) => allowedTypes.includes(entity.label));
+      if (before !== null) {
+        candidates = candidates.filter((entity) => entity.end <= before);
+      }
+      if (after !== null) {
+        candidates = candidates.filter((entity) => entity.start >= after);
+      }
+      if (!candidates.length) return null;
+      if (before !== null) {
+        candidates.sort((a, b) => Math.abs(a.end - before) - Math.abs(b.end - before));
+        return candidates[0];
+      }
+      if (after !== null) {
+        candidates.sort((a, b) => Math.abs(a.start - after) - Math.abs(b.start - after));
+        return candidates[0];
+      }
+      return candidates[0];
+    }
+
+    function extractRelations(text, entities) {
+      const relationSpecs = [
+        { predicate: "FOUNDER_OF", keywords: ["founded", "co-founded", "创办", "创立", "创建"], subjectTypes: ["PER"], objectTypes: ["ORG"] },
+        { predicate: "HEADQUARTERED_IN", keywords: ["headquartered in", "总部位于"], subjectTypes: ["ORG"], objectTypes: ["LOC"] },
+        { predicate: "LOCATED_IN", keywords: ["located in", "位于", "坐落于"], subjectTypes: ["ORG"], objectTypes: ["LOC"] },
+        { predicate: "CEO_OF", keywords: ["ceo of", "chief executive of", "首席执行官", "担任"], subjectTypes: ["PER"], objectTypes: ["ORG"] },
+        { predicate: "EMPLOYED_BY", keywords: ["works at", "worked at", "joined", "任职于", "就职于", "加入"], subjectTypes: ["PER"], objectTypes: ["ORG"] },
+        { predicate: "BORN_IN", keywords: ["born in", "出生于"], subjectTypes: ["PER"], objectTypes: ["LOC"] }
+      ];
+
+      const relations = [];
+      const sentences = splitSentences(text);
+
+      sentences.forEach((sentence) => {
+        const sentEntities = entities.filter((entity) => entity.start >= sentence.start && entity.end <= sentence.end);
+        const lower = sentence.text.toLowerCase();
+
+        relationSpecs.forEach((spec) => {
+          spec.keywords.forEach((keyword) => {
+            const keywordLower = keyword.toLowerCase();
+            const pos = lower.indexOf(keywordLower);
+            if (pos === -1) return;
+            if (spec.predicate === "LOCATED_IN" && sentence.text.includes("总部位于") && keyword === "位于") {
+              return;
+            }
+            const absoluteStart = sentence.start + pos;
+            const absoluteEnd = absoluteStart + keyword.length;
+            const subject = chooseEntity(sentEntities, spec.subjectTypes, absoluteStart, null);
+            const object = chooseEntity(sentEntities, spec.objectTypes, null, absoluteEnd);
+            if (subject && object && subject.text !== object.text) {
+              relations.push({
+                subject: subject.text,
+                predicate: spec.predicate,
+                object: object.text
+              });
+            }
+          });
+        });
+      });
+
+      const seen = new Set();
+      return relations.filter((relation) => {
+        const key = `${relation.subject}|${relation.predicate}|${relation.object}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+
+    function renderAll(result) {
+      entityCount.textContent = result.entities.length;
+      relationCount.textContent = result.relations.length;
+      nestedCount.textContent = result.nestedPairs.length;
+      renderText(result);
+      renderEntities(result);
+      renderRelations(result);
+      renderGraph(result);
+    }
+
+    function renderText(result) {
+      if (!result.text) {
+        textView.innerHTML = '<div class="empty">请输入文本后点击“抽取信息”。</div>';
+        return;
+      }
+      if (bioToggle.checked) {
+        textView.className = "mono-box";
+        textView.textContent = result.tokenTags.map((item) => `${item.tag.padStart(8, " ")}  ${item.token}`).join("\n");
+      } else {
+        textView.className = "highlight-box";
+        textView.innerHTML = buildHighlightedHtml(result.text, result.entities);
+      }
+    }
+
+    function buildHighlightedHtml(text, entities) {
+      let html = "";
+      let cursor = 0;
+      entities.forEach((entity) => {
+        if (entity.start > cursor) {
+          html += escapeHtml(text.slice(cursor, entity.start)).replace(/\n/g, "<br>");
+        }
+        html += `<span class="entity" style="background:${ENTITY_COLORS[entity.label] || ENTITY_COLORS.MISC}">
+          ${escapeHtml(text.slice(entity.start, entity.end))}
+          <span class="entity-tag">${escapeHtml(entity.label)}</span>
+        </span>`;
+        cursor = entity.end;
+      });
+      if (cursor < text.length) {
+        html += escapeHtml(text.slice(cursor)).replace(/\n/g, "<br>");
+      }
+      return html;
+    }
+
+    function renderEntities(result) {
+      if (!result.entities.length) {
+        entityTableWrap.innerHTML = '<div class="empty">当前文本没有识别出实体。</div>';
+      } else {
+        const rows = result.entities.map((entity) => `
+          <tr>
+            <td>${escapeHtml(entity.text)}</td>
+            <td>${escapeHtml(entity.label)}</td>
+            <td>[${entity.start}, ${entity.end})</td>
+          </tr>
+        `).join("");
+        entityTableWrap.innerHTML = `
+          <table>
+            <thead>
+              <tr><th>Entity</th><th>Type</th><th>Span</th></tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        `;
+      }
+
+      if (!result.nestedPairs.length) {
+        nestedTableWrap.innerHTML = '<div class="empty">当前文本未发现明显嵌套实体候选。</div>';
+      } else {
+        const rows = result.nestedPairs.map(([outer, inner]) => `
+          <tr>
+            <td>${escapeHtml(outer.text)} (${escapeHtml(outer.label)})</td>
+            <td>${escapeHtml(inner.text)} (${escapeHtml(inner.label)})</td>
+          </tr>
+        `).join("");
+        nestedTableWrap.innerHTML = `
+          <table>
+            <thead>
+              <tr><th>Outer Entity</th><th>Inner Entity</th></tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        `;
+      }
+    }
+
+    function renderRelations(result) {
+      if (!result.relations.length) {
+        relationTableWrap.innerHTML = '<div class="empty">当前文本没有抽取到关系。你可以尝试使用 founded / 位于 / 总部位于 / CEO of 等表达。</div>';
+        return;
+      }
+      const rows = result.relations.map((relation) => `
+        <tr>
+          <td>${escapeHtml(relation.subject)}</td>
+          <td>${escapeHtml(relation.predicate)}</td>
+          <td>${escapeHtml(relation.object)}</td>
+        </tr>
+      `).join("");
+      relationTableWrap.innerHTML = `
+        <table>
+          <thead>
+            <tr><th>Subject</th><th>Predicate</th><th>Object</th></tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    function renderGraph(result) {
+      graphSvg.innerHTML = "";
+      const width = 960;
+      const height = 560;
+      const centerX = width / 2;
+      const centerY = height / 2;
+      const radius = Math.min(width, height) * 0.32;
+
+      const nodes = buildGraphNodes(result);
+      if (!nodes.length) {
+        const empty = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        empty.setAttribute("x", centerX);
+        empty.setAttribute("y", centerY);
+        empty.setAttribute("text-anchor", "middle");
+        empty.setAttribute("fill", "#64748b");
+        empty.setAttribute("font-size", "16");
+        empty.textContent = "暂无图谱数据";
+        graphSvg.appendChild(empty);
+        return;
+      }
+
+      const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+      defs.innerHTML = `
+        <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"></path>
+        </marker>
+      `;
+      graphSvg.appendChild(defs);
+
+      const positions = new Map();
+      nodes.forEach((node, index) => {
+        const angle = (Math.PI * 2 * index) / nodes.length - Math.PI / 2;
+        const x = centerX + Math.cos(angle) * radius;
+        const y = centerY + Math.sin(angle) * radius;
+        positions.set(node.id, { x, y, size: nodeSize(node.label) });
+      });
+
+      result.relations.forEach((relation) => {
+        const sourceNode = nodes.find((node) => node.text === relation.subject);
+        const targetNode = nodes.find((node) => node.text === relation.object);
+        if (!sourceNode || !targetNode) return;
+        const source = positions.get(sourceNode.id);
+        const target = positions.get(targetNode.id);
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", source.x);
+        line.setAttribute("y1", source.y);
+        line.setAttribute("x2", target.x);
+        line.setAttribute("y2", target.y);
+        line.setAttribute("stroke", "#64748b");
+        line.setAttribute("stroke-width", "2");
+        line.setAttribute("marker-end", "url(#arrow)");
+        graphSvg.appendChild(line);
+
+        const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        label.setAttribute("x", (source.x + target.x) / 2);
+        label.setAttribute("y", (source.y + target.y) / 2 - 8);
+        label.setAttribute("text-anchor", "middle");
+        label.setAttribute("fill", "#334155");
+        label.setAttribute("font-size", "12");
+        label.setAttribute("font-weight", "700");
+        label.textContent = relation.predicate;
+        graphSvg.appendChild(label);
+      });
+
+      nodes.forEach((node) => {
+        const pos = positions.get(node.id);
+        const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        group.setAttribute("data-node-id", node.id);
+        group.style.cursor = "grab";
+
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute("cx", pos.x);
+        circle.setAttribute("cy", pos.y);
+        circle.setAttribute("r", nodeSize(node.label));
+        circle.setAttribute("fill", ENTITY_COLORS[node.label] || ENTITY_COLORS.MISC);
+        circle.setAttribute("stroke", "rgba(15,23,42,0.28)");
+        circle.setAttribute("stroke-width", "1.5");
+
+        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.setAttribute("x", pos.x);
+        text.setAttribute("y", pos.y + 4);
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("fill", "#0f172a");
+        text.setAttribute("font-size", "12");
+        text.setAttribute("font-weight", "700");
+        text.textContent = shortenNodeLabel(node.text);
+
+        const sub = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        sub.setAttribute("x", pos.x);
+        sub.setAttribute("y", pos.y + nodeSize(node.label) + 18);
+        sub.setAttribute("text-anchor", "middle");
+        sub.setAttribute("fill", "#475569");
+        sub.setAttribute("font-size", "11");
+        sub.textContent = node.label;
+
+        group.appendChild(circle);
+        group.appendChild(text);
+        group.appendChild(sub);
+        graphSvg.appendChild(group);
+      });
+
+      enableNodeDragging(nodes, positions, result);
+    }
+
+    function buildGraphNodes(result) {
+      const unique = [];
+      const seen = new Set();
+      result.entities.forEach((entity) => {
+        const key = `${entity.text}|${entity.label}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          unique.push({ id: key, text: entity.text, label: entity.label });
+        }
+      });
+      return unique;
+    }
+
+    function enableNodeDragging(nodes, positions, result) {
+      let activeNodeId = null;
+
+      graphSvg.onpointerdown = (event) => {
+        const group = event.target.closest("g[data-node-id]");
+        if (!group) return;
+        activeNodeId = group.getAttribute("data-node-id");
+        graphSvg.setPointerCapture(event.pointerId);
+      };
+
+      graphSvg.onpointermove = (event) => {
+        if (!activeNodeId) return;
+        const point = svgPoint(graphSvg, event.clientX, event.clientY);
+        positions.set(activeNodeId, {
+          ...positions.get(activeNodeId),
+          x: point.x,
+          y: point.y
+        });
+        redrawGraph(nodes, positions, result);
+      };
+
+      graphSvg.onpointerup = (event) => {
+        activeNodeId = null;
+        graphSvg.releasePointerCapture(event.pointerId);
+      };
+
+      graphSvg.onpointerleave = () => {
+        activeNodeId = null;
+      };
+    }
+
+    function redrawGraph(nodes, positions, result) {
+      graphSvg.innerHTML = "";
+      const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+      defs.innerHTML = `
+        <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"></path>
+        </marker>
+      `;
+      graphSvg.appendChild(defs);
+
+      result.relations.forEach((relation) => {
+        const sourceNode = nodes.find((node) => node.text === relation.subject);
+        const targetNode = nodes.find((node) => node.text === relation.object);
+        if (!sourceNode || !targetNode) return;
+        const source = positions.get(sourceNode.id);
+        const target = positions.get(targetNode.id);
+
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", source.x);
+        line.setAttribute("y1", source.y);
+        line.setAttribute("x2", target.x);
+        line.setAttribute("y2", target.y);
+        line.setAttribute("stroke", "#64748b");
+        line.setAttribute("stroke-width", "2");
+        line.setAttribute("marker-end", "url(#arrow)");
+        graphSvg.appendChild(line);
+
+        const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        label.setAttribute("x", (source.x + target.x) / 2);
+        label.setAttribute("y", (source.y + target.y) / 2 - 8);
+        label.setAttribute("text-anchor", "middle");
+        label.setAttribute("fill", "#334155");
+        label.setAttribute("font-size", "12");
+        label.setAttribute("font-weight", "700");
+        label.textContent = relation.predicate;
+        graphSvg.appendChild(label);
+      });
+
+      nodes.forEach((node) => {
+        const pos = positions.get(node.id);
+        const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        group.setAttribute("data-node-id", node.id);
+        group.style.cursor = "grab";
+
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute("cx", pos.x);
+        circle.setAttribute("cy", pos.y);
+        circle.setAttribute("r", nodeSize(node.label));
+        circle.setAttribute("fill", ENTITY_COLORS[node.label] || ENTITY_COLORS.MISC);
+        circle.setAttribute("stroke", "rgba(15,23,42,0.28)");
+        circle.setAttribute("stroke-width", "1.5");
+
+        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.setAttribute("x", pos.x);
+        text.setAttribute("y", pos.y + 4);
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("fill", "#0f172a");
+        text.setAttribute("font-size", "12");
+        text.setAttribute("font-weight", "700");
+        text.textContent = shortenNodeLabel(node.text);
+
+        const sub = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        sub.setAttribute("x", pos.x);
+        sub.setAttribute("y", pos.y + nodeSize(node.label) + 18);
+        sub.setAttribute("text-anchor", "middle");
+        sub.setAttribute("fill", "#475569");
+        sub.setAttribute("font-size", "11");
+        sub.textContent = node.label;
+
+        group.appendChild(circle);
+        group.appendChild(text);
+        group.appendChild(sub);
+        graphSvg.appendChild(group);
+      });
+    }
+
+    function nodeSize(label) {
+      return { PER: 28, ORG: 34, LOC: 24, MISC: 22 }[label] || 22;
+    }
+
+    function shortenNodeLabel(text) {
+      if (text.length <= 16) return text;
+      return text.slice(0, 14) + "...";
+    }
+
+    function svgPoint(svg, clientX, clientY) {
+      const point = svg.createSVGPoint();
+      point.x = clientX;
+      point.y = clientY;
+      return point.matrixTransform(svg.getScreenCTM().inverse());
+    }
+
+    function escapeHtml(value) {
+      return value
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+  </script>
+</body>
+</html>

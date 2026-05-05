@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>机器翻译机制与质量评测系统</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --text: #172033;
+      --muted: #637083;
+      --line: #d9dee7;
+      --blue: #2563eb;
+      --green: #15803d;
+      --amber: #b45309;
+      --red: #b91c1c;
+      --shadow: 0 10px 28px rgba(16, 24, 40, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.55;
+    }
+
+    header {
+      background: #111827;
+      color: #fff;
+      padding: 28px 24px;
+    }
+
+    .wrap {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      font-weight: 760;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: #cbd5e1;
+      font-size: 15px;
+    }
+
+    main {
+      padding: 24px 0 40px;
+    }
+
+    .notice {
+      border: 1px solid #bfdbfe;
+      background: #eff6ff;
+      color: #1e3a8a;
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 18px;
+      font-size: 14px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 18px;
+      overflow-x: auto;
+    }
+
+    .tab-button {
+      appearance: none;
+      border: 1px solid var(--line);
+      border-bottom: 0;
+      background: #eef2f7;
+      color: var(--text);
+      padding: 11px 16px;
+      border-radius: 8px 8px 0 0;
+      cursor: pointer;
+      font-weight: 650;
+      white-space: nowrap;
+    }
+
+    .tab-button.active {
+      background: var(--panel);
+      color: var(--blue);
+    }
+
+    .tab {
+      display: none;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 22px;
+    }
+
+    .tab.active {
+      display: block;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 22px;
+      letter-spacing: 0;
+    }
+
+    label {
+      display: block;
+      margin: 14px 0 8px;
+      color: #374151;
+      font-weight: 650;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 112px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      font: inherit;
+      color: var(--text);
+      background: #fff;
+    }
+
+    textarea:focus {
+      outline: 2px solid rgba(37, 99, 235, 0.18);
+      border-color: var(--blue);
+    }
+
+    button.action {
+      margin-top: 14px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--blue);
+      color: #fff;
+      padding: 11px 16px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    button.action:hover {
+      background: #1d4ed8;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .result {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      min-height: 96px;
+      background: #fafafa;
+    }
+
+    .result strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 15px;
+    }
+
+    .success {
+      border-color: #bbf7d0;
+      background: #f0fdf4;
+      color: #14532d;
+    }
+
+    .warn {
+      border-color: #fde68a;
+      background: #fffbeb;
+      color: #78350f;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 14px;
+    }
+
+    .metric {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-top: 14px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .metric b {
+      font-size: 30px;
+      color: var(--blue);
+    }
+
+    code {
+      display: block;
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #111827;
+      color: #e5e7eb;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 760px) {
+      h1 {
+        font-size: 24px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .tab {
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>机器翻译机制与质量评测系统</h1>
+      <p class="subtitle">Week 9 Vibe 实验：Rule-based MT、Neural Machine Translation 与 BLEU Score</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="notice">
+      这是纯 HTML 展示版，适合课堂演示和截图。真正调用 Hugging Face 模型的版本请使用 Streamlit 应用。
+    </div>
+
+    <nav class="tabs" aria-label="模块标签页">
+      <button class="tab-button active" data-tab="nmt">NMT Engine</button>
+      <button class="tab-button" data-tab="compare">Rule-based vs NMT</button>
+      <button class="tab-button" data-tab="bleu">BLEU Score</button>
+    </nav>
+
+    <section id="nmt" class="tab active">
+      <h2>神经机器翻译引擎</h2>
+      <label for="nmtInput">英文原文</label>
+      <textarea id="nmtInput">It rains cats and dogs.</textarea>
+      <button class="action" onclick="runNmt()">生成 NMT 译文</button>
+      <div id="nmtResult" class="result success" style="margin-top:16px;">
+        <strong>中文译文</strong>
+        点击按钮生成课堂演示译文。
+      </div>
+      <p class="muted">观察重点：NMT 是否能根据上下文处理 idiom、多义词和复杂长句，而不是只做词对词替换。</p>
+    </section>
+
+    <section id="compare" class="tab">
+      <h2>基于规则的直译 vs 神经网络意译</h2>
+      <label for="compareInput">英文原文</label>
+      <textarea id="compareInput">It rains cats and dogs.</textarea>
+      <button class="action" onclick="runCompare()">对比两种翻译</button>
+      <div class="grid">
+        <div id="ruleResult" class="result warn">
+          <strong>Rule-based 逐词直译</strong>
+          点击按钮生成结果。
+        </div>
+        <div id="compareNmtResult" class="result success">
+          <strong>NMT 神经机器翻译</strong>
+          点击按钮生成结果。
+        </div>
+      </div>
+      <p class="muted">观察重点：逐词直译在语序、定语从句、一词多义和习语表达上容易失真；NMT 通常更能利用上下文生成自然译文。</p>
+    </section>
+
+    <section id="bleu" class="tab">
+      <h2>机器翻译质量自动评测</h2>
+      <label for="bleuSource">待翻译英文原文</label>
+      <textarea id="bleuSource">It rains cats and dogs.</textarea>
+      <button class="action" onclick="fillCandidate()">用演示 NMT 生成 Candidate</button>
+      <div class="grid">
+        <div>
+          <label for="reference">标准中文参考译文 Reference</label>
+          <textarea id="reference">下着倾盆大雨。</textarea>
+        </div>
+        <div>
+          <label for="candidate">机器生成候选译文 Candidate</label>
+          <textarea id="candidate">下着倾盆大雨。</textarea>
+        </div>
+      </div>
+      <button class="action" onclick="runBleu()">计算 BLEU 分数</button>
+      <div class="metric">
+        <span>BLEU Score</span>
+        <b id="bleuScore">-</b>
+      </div>
+      <p id="bleuExplain" class="muted">BLEU 主要比较 Candidate 与 Reference 的 n-gram 重合程度。</p>
+      <code id="tokenView">Reference tokens:
+Candidate tokens:</code>
+    </section>
+  </main>
+
+  <script>
+    const dictionary = {
+      i: "我", you: "你", he: "他", she: "她", it: "它", we: "我们", they: "他们",
+      am: "是", is: "是", are: "是", was: "是", were: "是", be: "是",
+      a: "一个", an: "一个", the: "这个", this: "这个", that: "那个",
+      cat: "猫", cats: "猫", dog: "狗", dogs: "狗", rain: "雨", rains: "下雨",
+      and: "和", or: "或者", but: "但是", in: "在", on: "在", at: "在",
+      to: "到", from: "从", of: "的", for: "为了", with: "和",
+      like: "喜欢", love: "爱", study: "学习", studied: "学习了",
+      machine: "机器", translation: "翻译", language: "语言", natural: "自然",
+      processing: "处理", student: "学生", teacher: "老师", book: "书",
+      school: "学校", computer: "计算机", good: "好", bad: "坏",
+      beautiful: "美丽", important: "重要", difficult: "困难", simple: "简单",
+      because: "因为", if: "如果", when: "当", although: "虽然",
+      who: "谁", which: "哪个", where: "哪里", what: "什么", why: "为什么", how: "如何"
+    };
+
+    const demoTranslations = [
+      {
+        pattern: /rains cats and dogs/i,
+        zh: "下着倾盆大雨。"
+      },
+      {
+        pattern: /natural language processing/i,
+        zh: "这名认真学习自然语言处理的学生完成了机器翻译实验。"
+      },
+      {
+        pattern: /machine translation/i,
+        zh: "机器翻译是自然语言处理中的重要任务。"
+      }
+    ];
+
+    document.querySelectorAll(".tab-button").forEach((button) => {
+      button.addEventListener("click", () => {
+        const id = button.dataset.tab;
+        document.querySelectorAll(".tab-button").forEach((item) => item.classList.remove("active"));
+        document.querySelectorAll(".tab").forEach((item) => item.classList.remove("active"));
+        button.classList.add("active");
+        document.getElementById(id).classList.add("active");
+      });
+    });
+
+    function demoNmt(text) {
+      const source = text.trim();
+      const hit = demoTranslations.find((item) => item.pattern.test(source));
+      if (hit) return hit.zh;
+      if (!source) return "";
+      return "这是一个演示版 NMT 译文：模型会根据上下文生成更自然的中文表达。";
+    }
+
+    function ruleBased(text) {
+      const tokens = text.match(/[A-Za-z]+(?:'[A-Za-z]+)?|[0-9]+|[^\w\s]/g) || [];
+      return tokens.map((token) => {
+        const key = token.toLowerCase().replace(/[^\w']/g, "");
+        return dictionary[key] || token;
+      }).join(" ")
+        .replace(/\s+([，。！？,.!?])/g, "$1")
+        .replace(/,/g, "，")
+        .replace(/\./g, "。")
+        .replace(/\?/g, "？")
+        .replace(/!/g, "！");
+    }
+
+    function runNmt() {
+      const text = document.getElementById("nmtInput").value;
+      document.getElementById("nmtResult").innerHTML = `<strong>中文译文</strong>${demoNmt(text)}`;
+    }
+
+    function runCompare() {
+      const text = document.getElementById("compareInput").value;
+      document.getElementById("ruleResult").innerHTML = `<strong>Rule-based 逐词直译</strong>${ruleBased(text)}`;
+      document.getElementById("compareNmtResult").innerHTML = `<strong>NMT 神经机器翻译</strong>${demoNmt(text)}`;
+    }
+
+    function fillCandidate() {
+      const text = document.getElementById("bleuSource").value;
+      document.getElementById("candidate").value = demoNmt(text);
+    }
+
+    function tokenizeChinese(text) {
+      const cleaned = text.trim();
+      if (!cleaned) return [];
+      if ("Segmenter" in Intl) {
+        const segmenter = new Intl.Segmenter("zh-CN", { granularity: "word" });
+        return Array.from(segmenter.segment(cleaned))
+          .map((part) => part.segment.trim())
+          .filter((part) => part && !/^\p{P}+$/u.test(part));
+      }
+      return Array.from(cleaned).filter((char) => !/\s|\p{P}/u.test(char));
+    }
+
+    function ngrams(tokens, n) {
+      const grams = [];
+      for (let i = 0; i <= tokens.length - n; i += 1) {
+        grams.push(tokens.slice(i, i + n).join("\u0001"));
+      }
+      return grams;
+    }
+
+    function modifiedPrecision(referenceTokens, candidateTokens, n) {
+      const refCounts = new Map();
+      ngrams(referenceTokens, n).forEach((gram) => refCounts.set(gram, (refCounts.get(gram) || 0) + 1));
+      const candCounts = new Map();
+      ngrams(candidateTokens, n).forEach((gram) => candCounts.set(gram, (candCounts.get(gram) || 0) + 1));
+
+      let clipped = 0;
+      let total = 0;
+      candCounts.forEach((count, gram) => {
+        clipped += Math.min(count, refCounts.get(gram) || 0);
+        total += count;
+      });
+
+      return total === 0 ? 0.0001 : Math.max(clipped / total, 0.0001);
+    }
+
+    function bleu(reference, candidate) {
+      const refTokens = tokenizeChinese(reference);
+      const candTokens = tokenizeChinese(candidate);
+      if (!refTokens.length || !candTokens.length) {
+        return { score: 0, refTokens, candTokens };
+      }
+
+      const precisions = [1, 2, 3, 4].map((n) => modifiedPrecision(refTokens, candTokens, n));
+      const logPrecision = precisions.reduce((sum, value) => sum + 0.25 * Math.log(value), 0);
+      const bp = candTokens.length > refTokens.length ? 1 : Math.exp(1 - refTokens.length / candTokens.length);
+      return { score: bp * Math.exp(logPrecision), refTokens, candTokens };
+    }
+
+    function explain(score) {
+      if (score >= 0.7) return "较高：候选译文与参考译文在 n-gram 层面非常接近。";
+      if (score >= 0.4) return "中等：候选译文和参考译文有一定重合，但仍存在明显差异。";
+      if (score > 0) return "较低：可能是翻译质量差，也可能是合理同义改写没有被 BLEU 充分奖励。";
+      return "为 0：候选译文与参考译文几乎没有有效 n-gram 重合，或输入为空。";
+    }
+
+    function runBleu() {
+      const reference = document.getElementById("reference").value;
+      const candidate = document.getElementById("candidate").value;
+      const result = bleu(reference, candidate);
+      document.getElementById("bleuScore").textContent = result.score.toFixed(4);
+      document.getElementById("bleuExplain").textContent = explain(result.score);
+      document.getElementById("tokenView").textContent =
+        `Reference tokens: ${result.refTokens.join(" / ")}\nCandidate tokens: ${result.candTokens.join(" / ")}`;
+    }
+  </script>
+</body>
+</html>

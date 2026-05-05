@@ -1,0 +1,7 @@
+streamlit
+transformers
+torch
+sentencepiece
+sacremoses
+nltk
+jieba

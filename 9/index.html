@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>电商评论情感分析与意见挖掘平台</title>
+  <style>
+    :root {
+      --bg: #090d14;
+      --panel: #111827;
+      --panel-2: #172033;
+      --line: #2d3748;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --positive: #22c55e;
+      --neutral: #38bdf8;
+      --negative: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    main {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 24px 0 44px;
+    }
+
+    header {
+      padding: 18px 0 16px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      max-width: 900px;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .tab-button, button {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .tab-button.active, button.primary {
+      background: #0f2a3a;
+      border-color: #38bdf8;
+      color: #e0f2fe;
+    }
+
+    .tab {
+      display: none;
+    }
+
+    .tab.active {
+      display: block;
+    }
+
+    h2 {
+      font-size: 22px;
+      margin: 0 0 14px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      align-items: start;
+    }
+
+    .grid.dashboard {
+      grid-template-columns: 0.9fr 1.1fr;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+    }
+
+    label {
+      display: block;
+      color: #dbeafe;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      color: var(--text);
+      background: #0b1220;
+      font-size: 15px;
+      line-height: 1.7;
+      outline: none;
+    }
+
+    textarea:focus {
+      border-color: #38bdf8;
+    }
+
+    .result {
+      margin-top: 14px;
+      min-height: 148px;
+    }
+
+    .kicker, .source, .caption {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .label {
+      font-size: 36px;
+      font-weight: 800;
+      margin: 10px 0;
+    }
+
+    .score {
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+
+    .note {
+      background: var(--panel-2);
+      border-left: 4px solid #38bdf8;
+      border-radius: 6px;
+      padding: 14px 16px;
+      color: #dbeafe;
+      line-height: 1.75;
+      margin: 14px 0;
+    }
+
+    .gauge-wrap {
+      min-height: 290px;
+      display: grid;
+      place-items: center;
+    }
+
+    .gauge text {
+      fill: var(--text);
+      font-family: inherit;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .metric {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+    }
+
+    .metric-name {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .metric-value {
+      font-size: 28px;
+      font-weight: 800;
+      margin-top: 6px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: #dbeafe;
+      background: #0b1220;
+    }
+
+    .pill {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 3px 9px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .chart-title {
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    @media (max-width: 820px) {
+      main {
+        width: min(100% - 20px, 1180px);
+      }
+
+      h1 {
+        font-size: 25px;
+      }
+
+      .grid, .grid.dashboard, .metrics {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>电商评论情感分析与意见挖掘平台</h1>
+      <div class="subtitle">
+        Week 10 NLP Vibe 实验：将自然语言评论转化为 Positive / Negative / Neutral 极性判断，
+        并通过 Confidence Score 与批量可视化观察舆情分布。
+      </div>
+    </header>
+
+    <nav class="tabs" aria-label="模块切换">
+      <button class="tab-button active" data-tab="single">单文本分析</button>
+      <button class="tab-button" data-tab="compare">显式 / 隐式情感</button>
+      <button class="tab-button" data-tab="dashboard">Opinion Mining Dashboard</button>
+    </nav>
+
+    <section id="single" class="tab active">
+      <h2>模块 1：基础情感分类与置信度量化</h2>
+      <div class="grid">
+        <div class="panel">
+          <label for="singleText">输入一段中文商品评论</label>
+          <textarea id="singleText">这款手机屏幕很清晰，电池也耐用，整体非常满意。</textarea>
+          <button class="primary" id="singleBtn">分析单条评论</button>
+          <div id="singleResult" class="result"></div>
+          <div class="note">
+            观察任务：输入非常明显的好评和差评，比较标签变化与置信度变化。
+            工程应用中，置信度可以帮助判断模型输出是否足够可靠。
+          </div>
+        </div>
+        <div class="panel gauge-wrap">
+          <div id="singleGauge"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="compare" class="tab">
+      <h2>模块 2：显式情感 vs. 隐式情感识别</h2>
+      <div class="note">
+        Explicit Sentiment 通常带有明显褒贬词，例如“太棒了”“很垃圾”。
+        Implicit Sentiment 表面像事实描述，但暗含态度，例如“玩游戏半小时就没电了”。
+      </div>
+      <div class="grid">
+        <div class="panel">
+          <label for="explicitText">显式情感评价</label>
+          <textarea id="explicitText">这屏幕画质太垃圾了，完全不值这个价格。</textarea>
+          <div id="explicitResult" class="result"></div>
+          <div id="explicitGauge" class="gauge-wrap"></div>
+        </div>
+        <div class="panel">
+          <label for="implicitText">隐式客观描述</label>
+          <textarea id="implicitText">在太阳底下根本看不清屏幕上的字。</textarea>
+          <div id="implicitResult" class="result"></div>
+          <div id="implicitGauge" class="gauge-wrap"></div>
+        </div>
+      </div>
+      <p class="caption">观察重点：如果隐式描述被判断成 Neutral，说明小型模型可能缺少场景常识或深层语义推理能力。</p>
+    </section>
+
+    <section id="dashboard" class="tab">
+      <h2>模块 3：舆情挖掘与可视化仪表盘</h2>
+      <button class="primary" id="batchBtn">生成测试舆情数据并批量分析</button>
+      <div class="metrics">
+        <div class="metric"><div class="metric-name">Positive</div><div id="posCount" class="metric-value">0</div></div>
+        <div class="metric"><div class="metric-name">Neutral</div><div id="neuCount" class="metric-value">0</div></div>
+        <div class="metric"><div class="metric-name">Negative</div><div id="negCount" class="metric-value">0</div></div>
+      </div>
+      <div class="grid dashboard">
+        <div class="panel">
+          <div class="chart-title">整体口碑比例分布</div>
+          <div id="pieChart"></div>
+        </div>
+        <div class="panel">
+          <table>
+            <thead>
+              <tr>
+                <th>商品评论</th>
+                <th>情感极性</th>
+                <th>置信度</th>
+              </tr>
+            </thead>
+            <tbody id="reviewTable"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="note">
+        观察任务：把单条评论的情感判断聚合为整体口碑比例。
+        当 Negative 占比升高时，可以进一步定位产品缺陷、售后问题或潜在舆情风险。
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const colors = {
+      Positive: "#22c55e",
+      Neutral: "#38bdf8",
+      Negative: "#ef4444"
+    };
+
+    const positiveWords = ["好", "棒", "满意", "喜欢", "推荐", "清晰", "流畅", "划算", "惊喜", "舒服", "耐用", "优秀", "简单", "够响"];
+    const negativeWords = ["差", "垃圾", "失望", "卡", "坏", "退货", "看不清", "没电", "发热", "慢", "刺眼", "不值", "糊", "疼", "不明显"];
+
+    const samples = [
+      "手机外观很好看，系统也很流畅，拍照效果比预期好。",
+      "物流挺快，但包装有点压痕，整体还可以。",
+      "用了两天就开始发热，玩游戏半小时电量掉得很快。",
+      "屏幕显示清晰，阳光下也能看清，价格很划算。",
+      "客服回复慢，问题拖了三天才解决。",
+      "音质一般，没有特别惊喜，也没有明显问题。",
+      "电池续航很强，出门一天不用带充电宝。",
+      "刚收到就发现边框有划痕，体验非常差。",
+      "颜色和图片差不多，手感还算舒服。",
+      "拍夜景很糊，视频防抖也不稳定。",
+      "老人用起来很简单，字体大，声音也够响。",
+      "更新系统后偶尔卡顿，希望后续能优化。",
+      "这个价位能买到这样的配置，我觉得很满意。",
+      "戴久了耳朵疼，降噪效果也不明显。",
+      "功能比较基础，适合日常轻度使用。"
+    ];
+
+    function analyze(text) {
+      const cleaned = text.trim();
+      if (!cleaned) return { label: "Neutral", score: 0 };
+      const pos = positiveWords.reduce((sum, word) => sum + (cleaned.includes(word) ? 1 : 0), 0);
+      const neg = negativeWords.reduce((sum, word) => sum + (cleaned.includes(word) ? 1 : 0), 0);
+      if (pos > neg) return { label: "Positive", score: Math.min(0.68 + pos * 0.08, 0.96) };
+      if (neg > pos) return { label: "Negative", score: Math.min(0.68 + neg * 0.08, 0.96) };
+      return { label: "Neutral", score: 0.58 };
+    }
+
+    function renderResult(el, result, prefix) {
+      el.innerHTML = `
+        <div class="kicker">${prefix}</div>
+        <div class="label" style="color:${colors[result.label]}">${result.label}</div>
+        <div class="score">Confidence Score: ${result.score.toFixed(3)}</div>
+        <div class="source">Source: Rule-based browser demo</div>
+      `;
+    }
+
+    function gaugePath(cx, cy, r, startDeg, endDeg) {
+      const start = polar(cx, cy, r, endDeg);
+      const end = polar(cx, cy, r, startDeg);
+      const largeArc = endDeg - startDeg <= 180 ? 0 : 1;
+      return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArc} 0 ${end.x} ${end.y}`;
+    }
+
+    function polar(cx, cy, r, deg) {
+      const rad = (deg - 90) * Math.PI / 180;
+      return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+    }
+
+    function renderGauge(el, result, title) {
+      const percent = Math.round(result.score * 1000) / 10;
+      const end = -90 + 180 * result.score;
+      el.innerHTML = `
+        <svg class="gauge" viewBox="0 0 360 220" width="100%" height="260" role="img" aria-label="${title}">
+          <path d="${gaugePath(180, 180, 130, -90, 90)}" stroke="#253044" stroke-width="28" fill="none" stroke-linecap="round" />
+          <path d="${gaugePath(180, 180, 130, -90, end)}" stroke="${colors[result.label]}" stroke-width="28" fill="none" stroke-linecap="round" />
+          <text x="180" y="88" text-anchor="middle" font-size="17">${title}</text>
+          <text x="180" y="148" text-anchor="middle" font-size="42" font-weight="800">${percent}%</text>
+          <text x="180" y="180" text-anchor="middle" font-size="15" fill="#9ca3af">${result.label}</text>
+        </svg>
+      `;
+    }
+
+    function renderPie(el, counts) {
+      const total = Math.max(1, counts.Positive + counts.Neutral + counts.Negative);
+      let offset = 25;
+      const radius = 90;
+      const circumference = 2 * Math.PI * radius;
+      const parts = ["Positive", "Neutral", "Negative"].map(label => {
+        const fraction = counts[label] / total;
+        const dash = `${fraction * circumference} ${circumference}`;
+        const circle = `<circle r="${radius}" cx="120" cy="120" fill="none" stroke="${colors[label]}" stroke-width="42" stroke-dasharray="${dash}" stroke-dashoffset="${offset}" transform="rotate(-90 120 120)" />`;
+        offset -= fraction * circumference;
+        return circle;
+      }).join("");
+      el.innerHTML = `
+        <svg viewBox="0 0 420 260" width="100%" height="340" role="img" aria-label="Sentiment pie chart">
+          <circle r="${radius}" cx="120" cy="120" fill="none" stroke="#253044" stroke-width="42" />
+          ${parts}
+          <circle r="48" cx="120" cy="120" fill="#111827" />
+          <text x="120" y="114" text-anchor="middle" font-size="15">Total</text>
+          <text x="120" y="144" text-anchor="middle" font-size="30" font-weight="800">${total}</text>
+          ${legendItem(260, 72, "Positive", counts.Positive, total)}
+          ${legendItem(260, 120, "Neutral", counts.Neutral, total)}
+          ${legendItem(260, 168, "Negative", counts.Negative, total)}
+        </svg>
+      `;
+    }
+
+    function legendItem(x, y, label, count, total) {
+      const pct = Math.round(count / total * 100);
+      return `
+        <rect x="${x}" y="${y - 14}" width="16" height="16" rx="3" fill="${colors[label]}" />
+        <text x="${x + 26}" y="${y}" font-size="15">${label}: ${count} (${pct}%)</text>
+      `;
+    }
+
+    function runSingle() {
+      const result = analyze(document.querySelector("#singleText").value);
+      renderResult(document.querySelector("#singleResult"), result, "模型判断");
+      renderGauge(document.querySelector("#singleGauge"), result, "Confidence Score");
+    }
+
+    function runCompare() {
+      const explicit = analyze(document.querySelector("#explicitText").value);
+      const implicit = analyze(document.querySelector("#implicitText").value);
+      renderResult(document.querySelector("#explicitResult"), explicit, "显式评价结果");
+      renderResult(document.querySelector("#implicitResult"), implicit, "隐式描述结果");
+      renderGauge(document.querySelector("#explicitGauge"), explicit, "Explicit Confidence");
+      renderGauge(document.querySelector("#implicitGauge"), implicit, "Implicit Confidence");
+    }
+
+    function runBatch() {
+      const selected = [...samples].sort(() => Math.random() - 0.5).slice(0, 10 + Math.floor(Math.random() * 6));
+      const rows = selected.map(review => ({ review, ...analyze(review) }));
+      const counts = { Positive: 0, Neutral: 0, Negative: 0 };
+      rows.forEach(row => counts[row.label] += 1);
+
+      document.querySelector("#posCount").textContent = counts.Positive;
+      document.querySelector("#neuCount").textContent = counts.Neutral;
+      document.querySelector("#negCount").textContent = counts.Negative;
+      renderPie(document.querySelector("#pieChart"), counts);
+
+      document.querySelector("#reviewTable").innerHTML = rows.map(row => `
+        <tr>
+          <td>${row.review}</td>
+          <td><span class="pill" style="color:${colors[row.label]}; border:1px solid ${colors[row.label]}">${row.label}</span></td>
+          <td>${row.score.toFixed(3)}</td>
+        </tr>
+      `).join("");
+    }
+
+    document.querySelectorAll(".tab-button").forEach(button => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".tab-button").forEach(btn => btn.classList.remove("active"));
+        document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active"));
+        button.classList.add("active");
+        document.querySelector(`#${button.dataset.tab}`).classList.add("active");
+        if (button.dataset.tab === "compare") runCompare();
+      });
+    });
+
+    document.querySelector("#singleBtn").addEventListener("click", runSingle);
+    document.querySelector("#batchBtn").addEventListener("click", runBatch);
+    document.querySelector("#explicitText").addEventListener("input", runCompare);
+    document.querySelector("#implicitText").addEventListener("input", runCompare);
+
+    runSingle();
+    runCompare();
+    runBatch();
+  </script>
+</body>
+</html>

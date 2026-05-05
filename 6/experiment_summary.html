@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>语言模型训练与对比分析平台</title>
+  <style>
+    :root {
+      --bg: #f5f1e8;
+      --paper: #fffdf8;
+      --ink: #1f2430;
+      --muted: #60697a;
+      --accent: #0f5c52;
+      --accent-soft: #e7f3f0;
+      --line: #d7d0c4;
+      --warm: #a8562a;
+      --warm-soft: #fff0e8;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(15, 92, 82, 0.08), transparent 28%),
+        radial-gradient(circle at top right, rgba(168, 86, 42, 0.10), transparent 22%),
+        var(--bg);
+      line-height: 1.7;
+    }
+
+    .wrap {
+      width: min(1100px, calc(100% - 32px));
+      margin: 28px auto 40px;
+    }
+
+    .hero {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 28px 30px;
+      box-shadow: 0 16px 36px rgba(31, 36, 48, 0.08);
+    }
+
+    h1, h2, h3 {
+      margin-top: 0;
+      color: var(--accent);
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+
+    h2 {
+      font-size: 1.3rem;
+      margin-bottom: 14px;
+    }
+
+    .sub {
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    .lead {
+      background: var(--accent-soft);
+      border-left: 4px solid var(--accent);
+      padding: 14px 16px;
+      border-radius: 12px;
+      margin-top: 18px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .chip {
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      color: var(--accent);
+      font-size: 0.92rem;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 24px 0 16px;
+    }
+
+    .tab-btn {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--accent);
+      padding: 10px 16px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .panel {
+      display: none;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 12px 28px rgba(31, 36, 48, 0.06);
+    }
+
+    .panel.active {
+      display: block;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 18px;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    textarea, input, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font: inherit;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .inline {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .metric {
+      background: var(--accent-soft);
+      border-radius: 14px;
+      padding: 14px;
+      border: 1px solid rgba(15, 92, 82, 0.18);
+    }
+
+    .metric .k {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .metric .v {
+      color: var(--accent);
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+
+    .notice {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: var(--warm-soft);
+      border: 1px solid rgba(168, 86, 42, 0.25);
+      color: var(--warm);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+      font-size: 0.95rem;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f3eee6;
+      color: var(--accent);
+    }
+
+    .codebox {
+      background: #1f2430;
+      color: #e9edf4;
+      border-radius: 14px;
+      padding: 14px;
+      font-family: Consolas, monospace;
+      white-space: pre-wrap;
+      margin-top: 12px;
+    }
+
+    .summary {
+      margin-top: 24px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 24px;
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>语言模型训练与对比分析平台</h1>
+      <div class="sub">HTML 展示版，对应 Streamlit 项目内容与四个功能模块</div>
+      <div class="lead">
+        这个页面不是单独的实验报告页，而是按照 <strong>Streamlit 项目结构</strong> 重组后的 HTML 版展示页面。
+        内容与项目中的四个模块保持一致：<strong>n-gram & smoothing</strong>、<strong>RNN-LM</strong>、<strong>BERT vs GPT-2</strong>、<strong>Perplexity</strong>。
+      </div>
+      <div class="chips">
+        <span class="chip">Python</span>
+        <span class="chip">Streamlit</span>
+        <span class="chip">nltk</span>
+        <span class="chip">torch</span>
+        <span class="chip">transformers</span>
+      </div>
+    </section>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="tab1">1. n-gram & Smoothing</button>
+      <button class="tab-btn" data-tab="tab2">2. Train RNN-LM</button>
+      <button class="tab-btn" data-tab="tab3">3. BERT vs GPT-2</button>
+      <button class="tab-btn" data-tab="tab4">4. Perplexity</button>
+    </div>
+
+    <section class="panel active" id="tab1">
+      <h2>模块 1：n-gram & Add-one Smoothing</h2>
+      <p>这一部分对应 Streamlit 中的统计语言模型页面，用于构建 Bigram/Trigram，并展示平滑前后的句子联合概率差异。</p>
+
+      <div class="grid">
+        <div class="card">
+          <label>基础英文语料</label>
+          <textarea>The cat is walking in the garden.
+The dog is running in the park.
+The cat is sleeping on the sofa.
+The language model learns patterns from text.
+Natural language processing is fun and practical.</textarea>
+
+          <div class="inline">
+            <div>
+              <label>n-gram 阶数</label>
+              <select>
+                <option>Bigram (2)</option>
+                <option selected>Trigram (3)</option>
+              </select>
+            </div>
+            <div>
+              <label>平滑方式</label>
+              <select>
+                <option>未平滑</option>
+                <option selected>Add-one / Laplace</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="notice">课堂展示重点：输入一个合理但未在训练语料中出现过的句子，观察未平滑时概率归零，平滑后概率变为非零。</div>
+        </div>
+
+        <div class="card">
+          <label>待计算句子</label>
+          <input value="the cat is running in the garden">
+
+          <div class="metrics">
+            <div class="metric">
+              <div class="k">当前模式句子联合概率</div>
+              <div class="v">1.2410e-05</div>
+            </div>
+            <div class="metric">
+              <div class="k">未平滑概率</div>
+              <div class="v">0.0000e+00</div>
+            </div>
+            <div class="metric">
+              <div class="k">Add-one 后概率</div>
+              <div class="v">1.2410e-05</div>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>context</th>
+                <th>target</th>
+                <th>count(context,target)</th>
+                <th>count(context)</th>
+                <th>seen</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>&lt;s&gt; &lt;s&gt;</td>
+                <td>the</td>
+                <td>4</td>
+                <td>5</td>
+                <td>Yes</td>
+              </tr>
+              <tr>
+                <td>&lt;s&gt; the</td>
+                <td>cat</td>
+                <td>2</td>
+                <td>4</td>
+                <td>Yes</td>
+              </tr>
+              <tr>
+                <td>cat is</td>
+                <td>running</td>
+                <td>0</td>
+                <td>2</td>
+                <td>No</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="tab2">
+      <h2>模块 2：Train Your Own RNN Language Model</h2>
+      <p>这一部分对应 Streamlit 中的 RNN 训练页面，允许输入自定义短语料并调整训练超参数，观察 loss 曲线与生成结果。</p>
+
+      <div class="grid">
+        <div class="card">
+          <label>自定义训练语料</label>
+          <textarea>hello world hello world hello world hello world hello world</textarea>
+
+          <div class="inline">
+            <div>
+              <label>Hidden Size</label>
+              <input value="64">
+            </div>
+            <div>
+              <label>Epochs</label>
+              <input value="60">
+            </div>
+            <div>
+              <label>Learning Rate</label>
+              <input value="0.01">
+            </div>
+            <div>
+              <label>RNN Cell</label>
+              <select>
+                <option>RNN</option>
+                <option selected>LSTM</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>训练过程展示</h3>
+          <div class="codebox">Epoch 1   Loss: 2.387
+Epoch 10  Loss: 1.264
+Epoch 20  Loss: 0.641
+Epoch 40  Loss: 0.211
+Epoch 60  Loss: 0.084</div>
+          <div class="notice">课堂观察重点：比较不同 Hidden Size 和 Epochs 下 loss 下降速度与最终生成文本质量。</div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <label>起始字符 / Seed</label>
+          <input value="h">
+          <label style="margin-top: 12px;">生成长度</label>
+          <input value="50">
+        </div>
+        <div class="card">
+          <h3>生成文本</h3>
+          <div class="codebox">hello world hello world hello world hello world h</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="tab3">
+      <h2>模块 3：Masked LM vs. Causal LM</h2>
+      <p>这一部分对应 Streamlit 中的预训练模型对比页面，左侧展示 BERT 的填空能力，右侧展示 GPT-2 的自回归续写。</p>
+
+      <div class="grid">
+        <div class="card">
+          <h3>BERT (`bert-base-uncased`)</h3>
+          <label>输入包含 [MASK] 的句子</label>
+          <input value="The man went to the [MASK] to buy some milk.">
+          <table>
+            <thead>
+              <tr>
+                <th>token</th>
+                <th>score</th>
+                <th>sequence</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>store</td>
+                <td>0.4123</td>
+                <td>The man went to the store to buy some milk.</td>
+              </tr>
+              <tr>
+                <td>shop</td>
+                <td>0.1738</td>
+                <td>The man went to the shop to buy some milk.</td>
+              </tr>
+              <tr>
+                <td>market</td>
+                <td>0.0812</td>
+                <td>The man went to the market to buy some milk.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <h3>GPT-2 (`gpt2`)</h3>
+          <label>输入续写 Prompt</label>
+          <textarea>Natural language processing helps us</textarea>
+          <div class="codebox">Natural language processing helps us understand text, build smarter tools, and generate more fluent responses for users.</div>
+          <div class="notice">课堂展示重点：BERT 利用左右两侧上下文填空，GPT-2 只依据左侧上下文逐步续写。</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="tab4">
+      <h2>模块 4：Cross-Entropy & Perplexity</h2>
+      <p>这一部分对应 Streamlit 中的 PPL 评价页面，使用 GPT-2 计算句子的交叉熵损失，并由 <code>PPL = exp(loss)</code> 得到困惑度。</p>
+
+      <div class="grid">
+        <div class="card">
+          <label>每行输入一个待评估句子</label>
+          <textarea>The cat is sleeping on the sofa.
+This sentence is clear and grammatical.
+sofa greenly idea thunder milk because.</textarea>
+        </div>
+        <div class="card">
+          <h3>结果表格</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>sentence</th>
+                <th>cross_entropy_loss</th>
+                <th>perplexity</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>The cat is sleeping on the sofa.</td>
+                <td>2.4163</td>
+                <td>11.2054</td>
+              </tr>
+              <tr>
+                <td>This sentence is clear and grammatical.</td>
+                <td>2.9088</td>
+                <td>18.3351</td>
+              </tr>
+              <tr>
+                <td>sofa greenly idea thunder milk because.</td>
+                <td>5.3216</td>
+                <td>204.7784</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="notice">课堂观察重点：语法自然的句子 PPL 往往更低，而随机拼接或不自然句子的 PPL 会明显更高。</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="summary">
+      <h2>实验总结</h2>
+      <p>
+        本实验围绕语言模型的训练与比较，构建了一个包含四个模块的交互式平台。通过实现 n-gram 与 Add-one smoothing，可以直观看到统计语言模型在面对未见事件时的零概率问题，以及平滑方法如何重新分配概率质量。通过从零训练字符级 RNN/LSTM，可以观察模型如何借助隐藏状态学习序列模式，并理解神经语言模型相对于传统统计模型在表达能力上的提升。
+      </p>
+      <p>
+        在预训练模型部分，BERT 和 GPT-2 展示了两种不同的建模思想。BERT 使用 Masked Language Modeling，通过双向上下文对掩码位置进行预测，更偏向理解型任务；GPT-2 使用 Causal Language Modeling，从左到右进行自回归生成，更适合文本续写任务。最后，在评价指标部分，利用 GPT-2 计算交叉熵损失和困惑度，可以验证“PPL 越小，模型对句子的建模效果越好”这一结论。
+      </p>
+      <p>
+        整体来看，本实验把统计语言模型、RNN 语言模型和 Transformer 预训练模型放到了同一个系统中进行比较，有助于从建模方式、上下文利用和评价指标三个角度理解不同语言模型之间的联系与差异，也提升了将 NLP 理论转化为可视化系统的实践能力。
+      </p>
+      <ul>
+        <li>统计模型强在简单直观和可解释性，但容易受到数据稀疏影响。</li>
+        <li>RNN 能通过隐藏状态维护历史信息，但长距离依赖仍然是挑战。</li>
+        <li>BERT 适合填空和理解，GPT-2 适合续写和生成。</li>
+        <li>Perplexity 可以作为语言模型优劣的定量评价指标。</li>
+      </ul>
+    </section>
+  </div>
+
+  <script>
+    const buttons = document.querySelectorAll('.tab-btn');
+    const panels = document.querySelectorAll('.panel');
+
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        buttons.forEach((b) => b.classList.remove('active'));
+        panels.forEach((p) => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>
