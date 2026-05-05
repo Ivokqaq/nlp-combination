@@ -1,0 +1,38 @@
+===== PAGE 47 PYPDF =====
+༅
+▶༢Ս
+༢ᇏđ
+ંऌđཁ
+ՍӁളğ
+֩
+֩
+֩
+ѓᇿဢ২ğ
+	
+5IJSERVBSUFS TBMFT JO &VSPQF XFSF FYDFQUJPOBMMZ
+TUSPOH["SH1] CPPTUFE CZ QSPNPUJPOBM QSPHSBNT BOE OFX
+QSPEVDUT⚶BMUIPVHIՍ XFBLFS GPSFJHO DVSSFODJFT
+SFEVDFE UIF DPNQBOZ′T FBSOJOHT["SH2]
+	
+.PTU PJM DPNQBOJFTXIFOUIFZ TFU FYQMPSBUJPO BOE
+QSPEVDUJPO CVEHFUT GPS UIJT ZFBS PSFDBTU SFWFOVF PG 
+GPS FBDI CBSSFM PG DSVEF QSPEVDFE
+
+===== PAGE 47 FITZ =====
+浅层篇章分析
+▶显式篇章关系（Explicit Discourse Relation）由显式连接词
+定义，通过显式连接词连接Arg1 和Arg2。在显式关系中，
+Arg2 一般为句法上关联的论据，Arg1 则为另一个论据，显
+式连接词由三种语法连接词产生：
+1 从属连词，如because, when 等
+2 并列连词，如and, or 等
+3 语篇副词，如for example, instead 等
+基于显式关系定义的标注样例：
+(1) Third-quarter sales in Europe were exceptionally
+strong[Arg1], boosted by promotional programs and new
+products–although显式连接词weaker foreign currencies
+reduced the company′s earnings[Arg2].
+(2) Most oil companies, when they set exploration and
+production budgets for this year, orecast revenue of $15
+for each barrel of crude produced.
+

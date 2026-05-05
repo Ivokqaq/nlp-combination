@@ -1,0 +1,20 @@
+===== PAGE 32 PYPDF =====
+۩ٳ
+▶ູ྽ਙѓᇿ໙ีൻೆ
+ओሰ x = {YU}O
+U=1đఃൻԛ y = {ZU}O
+U=1ZU۱
+൞đᄵ ZU= 1ᄵ
+ZU= 0Ⴟ #J-45.$3' ଆ྘ൌགྷᆃ၂಩ༀb
+5PXBSE 'BTU BOE "DDVSBUF /FVSBM %JTDPVSTF 4FHNFOUBUJPO 
+
+===== PAGE 32 FITZ =====
+基于循环神经网络的话语分割
+▶话语分割任务还可以转换为序列标注问题2，给定一个输入
+句子x = {xt}n
+t=1，其输出y = {yt}n
+t=1 中每个yt 表示第t 个
+词是否为一个基本单元的开头，如果是，则yt = 1，否则
+yt = 0。可以采用基于BiLSTM-CRF 模型实现这一任务。
+2Toward Fast and Accurate Neural Discourse Segmentation, 2018.
+

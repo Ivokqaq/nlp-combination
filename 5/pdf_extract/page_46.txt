@@ -1,0 +1,32 @@
+===== PAGE 46 PYPDF =====
+༅
+▶ 1FOO %JTDPVSTF 5SFFCBOLč1%5#Ďࢤ
+č%JTDPVSTF -FYJDBM 5SFF "EKVODU (SBNNBSđ%-5"(Ď
+ਸ਼၂սіྟ
+đ
+ྛѓᇿb
+▶࿽đ1%5#
+༢༅b
+▶༢ቆ
+֥
+ཌྟඨ྽đఃᇏ
+"SH ᄝ "SH ᆭభb
+▶ູཁൔ௉
+༢ਆোb
+
+===== PAGE 46 FITZ =====
+浅层篇章分析
+▶Penn Discourse Treebank（PDTB）是基于词汇化树型连接
+语法（Discourse Lexical Tree Adjunct Grammar，D-LTAG）
+理论构建的篇章分析标注框架，是篇章分析中的另一代表性
+框架。PDTB 以篇章内相邻或者跨度在一定范围内的片段，
+以连接词为核心，对片段间关系进行标注。
+▶相较于修辞结构理论将整个篇章构建为树结构而言，PDTB
+则针对两个片段之间的关系，因此也可以称为浅层篇章分析。
+▶每个篇章关系由两个论据（Argument）及其之间的关系组
+成，两个论据分别标注为Arg1 和Arg2。在相邻句子构成的
+关系中，Arg1 和Arg2 则反映论据之间的线性顺序，其中
+Arg1 在Arg2 之前。
+▶根据连接词是否显式存在，PDTB 标注的关系可分为显式篇
+章关系和隐式篇章关系两类。
+

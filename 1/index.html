@@ -1,0 +1,171 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NLP 学习可视化实验室</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">NLP Learning Studio</p>
+        <h1>从词语规范化到分词与词性标注</h1>
+        <p class="hero-text">
+          这是一个面向初学者的中文 NLP 交互实验页面。你可以输入一句中文，观察它如何先被规范化，再被不同算法切分，最后进入词性标注，并比较歧义句在不同策略下的差异。
+        </p>
+        <div class="hero-metrics">
+          <div class="metric-card">
+            <span class="metric-value">3</span>
+            <span class="metric-label">核心知识模块</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-value">3</span>
+            <span class="metric-label">分词算法对比</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-value">实时</span>
+            <span class="metric-label">结果分析与可视化</span>
+          </div>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="constellation">
+          <div class="node">规范化</div>
+          <div class="node">分词</div>
+          <div class="node">词性标注</div>
+        </div>
+        <div class="flow-caption">文本预处理决定后续分析质量，分词差异又会直接影响词性判断。</div>
+      </div>
+    </header>
+
+    <main class="main-grid">
+      <section class="panel panel-wide">
+        <div class="panel-header">
+          <div>
+            <p class="section-tag">知识脉络</p>
+            <h2>三部分内容如何串联</h2>
+          </div>
+        </div>
+        <div class="pipeline">
+          <article class="pipeline-card">
+            <span class="step-index">01</span>
+            <h3>词语规范化</h3>
+            <p>统一文本形式，减少“同义不同写法”带来的噪声，例如全角/半角、大小写、标点、空白和数字表达差异。</p>
+            <ul>
+              <li>输入更干净</li>
+              <li>降低分词混乱</li>
+              <li>提高词典匹配率</li>
+            </ul>
+          </article>
+          <article class="pipeline-card">
+            <span class="step-index">02</span>
+            <h3>中文分词</h3>
+            <p>中文文本没有天然空格，需要把连续字串切成词。歧义句是理解不同算法差异的最好入口。</p>
+            <ul>
+              <li>正向最大匹配</li>
+              <li>逆向最大匹配</li>
+              <li>频率驱动动态规划</li>
+            </ul>
+          </article>
+          <article class="pipeline-card">
+            <span class="step-index">03</span>
+            <h3>词性标注</h3>
+            <p>给每个词贴上语法标签，例如名词、动词、地名等。分词方案不同，词性序列也会一起变化。</p>
+            <ul>
+              <li>名词 `n`</li>
+              <li>动词 `v`</li>
+              <li>地名 `ns`</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel panel-tall">
+        <div class="panel-header">
+          <div>
+            <p class="section-tag">输入实验台</p>
+            <h2>一句话观察整条流水线</h2>
+          </div>
+          <button id="run-button" class="primary-button">运行分析</button>
+        </div>
+        <label class="input-label" for="sentence-input">输入一句中文文本</label>
+        <textarea id="sentence-input" rows="4">南京市长江大桥</textarea>
+
+        <div class="example-bar">
+          <span>示例句：</span>
+          <button class="example-chip" data-example="南京市长江大桥">南京市长江大桥</button>
+          <button class="example-chip" data-example="研究生命起源">研究生命起源</button>
+          <button class="example-chip" data-example="乒乓球拍卖完了">乒乓球拍卖完了</button>
+          <button class="example-chip" data-example="请把ＡＩ　NLP的结果，规范化后再分词！">规范化示例</button>
+        </div>
+
+        <div class="toggle-grid">
+          <label><input type="checkbox" id="normalize-width" checked> 全角转半角</label>
+          <label><input type="checkbox" id="normalize-case" checked> 英文转小写</label>
+          <label><input type="checkbox" id="normalize-punctuation" checked> 标点统一</label>
+          <label><input type="checkbox" id="normalize-space" checked> 多余空白压缩</label>
+        </div>
+
+        <div class="flow-preview">
+          <div class="text-stage">
+            <span class="stage-label">原始输入</span>
+            <p id="raw-output"></p>
+          </div>
+          <div class="text-stage accent">
+            <span class="stage-label">规范化输出</span>
+            <p id="normalized-output"></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <p class="section-tag">规范化说明</p>
+            <h2>预处理在做什么</h2>
+          </div>
+        </div>
+        <div id="normalization-list" class="normalization-list"></div>
+      </section>
+
+      <section class="panel panel-wide">
+        <div class="panel-header">
+          <div>
+            <p class="section-tag">算法对比</p>
+            <h2>不同分词算法的切分结果</h2>
+          </div>
+        </div>
+        <div id="segmentation-results" class="algorithm-grid"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <p class="section-tag">统计分析</p>
+            <h2>分词效果可视化</h2>
+          </div>
+        </div>
+        <canvas id="stats-chart" width="420" height="260"></canvas>
+        <div id="stats-summary" class="stats-summary"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <p class="section-tag">教学提醒</p>
+            <h2>初学者可以关注什么</h2>
+          </div>
+        </div>
+        <div id="insights" class="insight-list"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="./script.js"></script>
+</body>
+</html>

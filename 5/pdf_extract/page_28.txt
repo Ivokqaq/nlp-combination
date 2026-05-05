@@ -1,0 +1,25 @@
+===== PAGE 28 PYPDF =====
+۩ٳ
+▶۱؟ࠇ۱Ч௉
+ᅣֆჭč&%6Ďb
+č%JTDPVSTF 4FHNFOUBUJPOĎٳ
+༅಩ༀb
+▶֥
+ো಩ༀЧ௉
+b
+ൻೆğ o5IF CBOL BMTP TBZT JU XJMM VTF JUT OFUXPSL UP
+DIBOOFM UIF JOWFTUNFOUTp
+
+
+===== PAGE 28 FITZ =====
+话语分割
+▶根据修辞结构理论，篇章修辞关系定义在两个或多个基本篇
+章单元（EDU）之间。
+话语分割（Discourse Segmentation）的目标就是将篇章分
+割为基本篇章单元，从而实现后续的篇章分析任务。
+▶话语分割任务通常被形式化为序列标注任务或者单词级别的
+二分类任务，对每个单词位置输出预测其是否为一个基本篇
+章单元的边界。
+输入：“The bank also says it will use its network to
+channel the investments”
+

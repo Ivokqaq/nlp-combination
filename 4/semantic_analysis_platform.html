@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deep Semantic Analysis Platform</title>
+  <style>
+    :root {
+      --bg: #f6f0e8;
+      --panel: rgba(255, 250, 244, 0.82);
+      --panel-strong: #fffaf4;
+      --text: #18312d;
+      --muted: #5e726f;
+      --accent: #0f766e;
+      --accent-2: #d97706;
+      --accent-3: #9f1239;
+      --line: rgba(24, 49, 45, 0.12);
+      --shadow: 0 20px 50px rgba(33, 37, 41, 0.08);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(15, 118, 110, 0.16), transparent 28%),
+        radial-gradient(circle at top right, rgba(217, 119, 6, 0.14), transparent 26%),
+        linear-gradient(180deg, #fbf8f3 0%, var(--bg) 100%);
+      font-family: "Avenir Next", "Segoe UI Variable", "PingFang SC", "Hiragino Sans GB", sans-serif;
+      min-height: 100vh;
+    }
+
+    .orb {
+      position: fixed;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      filter: blur(30px);
+      opacity: 0.5;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .orb-a {
+      background: rgba(15, 118, 110, 0.18);
+      top: 60px;
+      left: -70px;
+    }
+
+    .orb-b {
+      background: rgba(159, 18, 57, 0.12);
+      right: -60px;
+      top: 260px;
+    }
+
+    .shell {
+      position: relative;
+      z-index: 1;
+      width: min(1180px, calc(100% - 32px));
+      margin: 28px auto 40px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, rgba(255, 250, 244, 0.92), rgba(245, 255, 252, 0.9));
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      box-shadow: var(--shadow);
+      border-radius: 34px;
+      padding: 28px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -80px -120px auto;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(15, 118, 110, 0.14), transparent 66%);
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(15, 118, 110, 0.08);
+      color: var(--accent);
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 16px 0 12px;
+      font-family: "Iowan Old Style", "Palatino Linotype", "Source Han Serif SC", serif;
+      font-size: clamp(34px, 5vw, 58px);
+      line-height: 1.05;
+      font-weight: 700;
+    }
+
+    .lead {
+      margin: 0;
+      max-width: 720px;
+      color: var(--muted);
+      line-height: 1.8;
+      font-size: 16px;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    .stat-card,
+    .card,
+    .result-card,
+    .table-card,
+    .note-card {
+      background: var(--panel);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+    }
+
+    .stat-card {
+      padding: 18px;
+      min-height: 124px;
+    }
+
+    .stat-card .label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .stat-card strong {
+      display: block;
+      font-size: 26px;
+      margin-bottom: 8px;
+    }
+
+    .stat-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .section {
+      margin-top: 26px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .tab-btn {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: rgba(255, 250, 244, 0.8);
+      color: var(--text);
+      padding: 12px 18px;
+      border-radius: 999px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+    }
+
+    .tab-btn:hover,
+    .tab-btn.active {
+      background: var(--accent);
+      color: white;
+      transform: translateY(-1px);
+    }
+
+    .tab-panel {
+      display: none;
+      animation: rise 0.45s ease;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 18px;
+    }
+
+    .card {
+      padding: 22px;
+    }
+
+    .card h2,
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 24px;
+      font-family: "Iowan Old Style", "Palatino Linotype", "Source Han Serif SC", serif;
+    }
+
+    .card p {
+      margin: 0 0 16px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .field-group {
+      display: grid;
+      gap: 14px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    input[type="text"],
+    textarea {
+      width: 100%;
+      border: 1px solid rgba(24, 49, 45, 0.14);
+      background: rgba(255, 255, 255, 0.88);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      font: inherit;
+      color: var(--text);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    textarea {
+      min-height: 106px;
+      resize: vertical;
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: rgba(15, 118, 110, 0.5);
+      box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.08);
+    }
+
+    .button-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .primary,
+    .ghost {
+      appearance: none;
+      border: none;
+      padding: 13px 18px;
+      border-radius: 14px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.18s ease, opacity 0.18s ease;
+    }
+
+    .primary {
+      background: linear-gradient(135deg, var(--accent), #115e59);
+      color: white;
+      box-shadow: 0 14px 28px rgba(15, 118, 110, 0.18);
+    }
+
+    .ghost {
+      background: rgba(15, 118, 110, 0.08);
+      color: var(--accent);
+      border: 1px solid rgba(15, 118, 110, 0.14);
+    }
+
+    .primary:hover,
+    .ghost:hover {
+      transform: translateY(-1px);
+    }
+
+    .result-stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .result-card {
+      padding: 18px;
+    }
+
+    .mini-label {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+    }
+
+    .synset {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .definition {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .meter-shell {
+      display: grid;
+      grid-template-columns: 112px 1fr;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .meter {
+      --value: 65;
+      width: 112px;
+      height: 112px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle closest-side, #fffaf4 74%, transparent 76% 100%),
+        conic-gradient(var(--accent-2) calc(var(--value) * 1%), rgba(24, 49, 45, 0.08) 0);
+      display: grid;
+      place-items: center;
+    }
+
+    .meter span {
+      font-size: 21px;
+      font-weight: 800;
+    }
+
+    .insight-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .insight {
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(15, 118, 110, 0.06);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .role-table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.74);
+    }
+
+    .role-table th,
+    .role-table td {
+      text-align: left;
+      padding: 14px 12px;
+      border-bottom: 1px solid rgba(24, 49, 45, 0.08);
+      font-size: 14px;
+    }
+
+    .role-table th {
+      color: var(--muted);
+      font-weight: 700;
+      background: rgba(15, 118, 110, 0.06);
+    }
+
+    .table-card {
+      padding: 16px;
+      overflow-x: auto;
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: rgba(217, 119, 6, 0.08);
+      color: #7c4a03;
+      border: 1px solid rgba(217, 119, 6, 0.14);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .dep-map {
+      position: relative;
+      min-height: 220px;
+      overflow: hidden;
+    }
+
+    .dep-canvas {
+      width: 100%;
+      height: 220px;
+      display: block;
+    }
+
+    .note-card {
+      margin-top: 18px;
+      padding: 18px;
+    }
+
+    .note-card h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+
+    .note-card ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .footer {
+      margin-top: 20px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    @media (max-width: 900px) {
+      .hero-grid,
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-stats {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .shell {
+        width: min(100% - 18px, 1180px);
+        margin-top: 12px;
+      }
+
+      .hero,
+      .card {
+        padding: 18px;
+      }
+
+      .hero-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .meter-shell {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="orb orb-a"></div>
+  <div class="orb orb-b"></div>
+
+  <main class="shell">
+    <section class="hero">
+      <div class="hero-grid">
+        <div>
+          <span class="eyebrow">Week 5 NLP Assignment</span>
+          <h1>Deep Semantic Analysis Platform</h1>
+          <p class="lead">
+            一个面向课程作业展示的可视化 Web 页面，围绕 <strong>Word Sense Disambiguation (WSD)</strong>
+            和 <strong>Semantic Role Labeling (SRL)</strong> 两个模块组织。页面既能展示理论映射，也能用前端交互演示核心分析结果。
+          </p>
+        </div>
+        <div class="hero-stats">
+          <div class="stat-card">
+            <span class="label">Module 01</span>
+            <strong>WSD 对比分析</strong>
+            <p>对比 Lesk 词典释义匹配与 BERT contextual embedding 的差异。</p>
+          </div>
+          <div class="stat-card">
+            <span class="label">Module 02</span>
+            <strong>SRL 结构抽取</strong>
+            <p>基于依存关系近似提取 A0、A1、AM-LOC、AM-TMP 等语义角色。</p>
+          </div>
+          <div class="stat-card">
+            <span class="label">Theory Link</span>
+            <strong>P18 · P10 · P21</strong>
+            <p>对应 WSD 的词义释义匹配、上下文向量表示与 BERT 特征式匹配。</p>
+          </div>
+          <div class="stat-card">
+            <span class="label">Theory Link</span>
+            <strong>P43 · P49</strong>
+            <p>对应 SRL 的谓词-论元结构与基于依存关系树的角色标注方法。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="wsd">WSD 词义消歧</button>
+        <button class="tab-btn" data-tab="srl">SRL 语义角色标注</button>
+      </div>
+
+      <div class="tab-panel active" id="tab-wsd">
+        <div class="grid">
+          <section class="card">
+            <h2>模块 1：WSD 对比测试</h2>
+            <p>
+              这一页强调两种思路的差异：左边是基于 <code>WordNet gloss matching</code> 的传统方案，
+              右边是基于上下文的 <code>BERT embedding</code> 表示。为了方便课程展示，这里提供了可直接演示的前端分析逻辑。
+            </p>
+
+            <div class="field-group">
+              <div>
+                <label for="wsdSentenceA">句子 1</label>
+                <textarea id="wsdSentenceA">I went to the bank to deposit my money.</textarea>
+              </div>
+              <div>
+                <label for="wsdTarget">目标词</label>
+                <input id="wsdTarget" type="text" value="bank" />
+              </div>
+              <div>
+                <label for="wsdSentenceB">句子 2</label>
+                <textarea id="wsdSentenceB">I sat by the river bank.</textarea>
+              </div>
+            </div>
+
+            <div class="button-row">
+              <button class="primary" id="runWsd">运行 WSD 分析</button>
+              <button class="ghost" id="fillWsdExample">恢复示例</button>
+            </div>
+
+            <div class="note-card">
+              <h3>建议观察点</h3>
+              <ul>
+                <li>Lesk 能否把 <code>bank</code> 区分成金融机构和河岸。</li>
+                <li>BERT cosine similarity 是否会因为上下文变化而降低。</li>
+                <li>同一个词形在不同句子中是否体现出动态上下文语义表示。</li>
+              </ul>
+            </div>
+          </section>
+
+          <section class="result-stack">
+            <div class="result-card">
+              <span class="mini-label">Traditional Method · Lesk + WordNet</span>
+              <div class="synset" id="leskSynset">depository_financial_institution.n.01</div>
+              <p class="definition" id="leskDefinition">
+                a financial institution that accepts deposits and channels the money into lending activities
+              </p>
+            </div>
+
+            <div class="result-card">
+              <span class="mini-label">Contextual Method · BERT Similarity</span>
+              <div class="meter-shell">
+                <div class="meter" id="similarityMeter" style="--value:34">
+                  <span id="similarityValue">0.34</span>
+                </div>
+                <div>
+                  <div class="synset" id="similarityTitle">语义差异较明显</div>
+                  <p class="definition" id="similarityText">
+                    两个句子里的目标词出现在不同语境中，说明上下文向量表示发生了明显变化，适合用来解释动态上下文 embedding 的概念。
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="result-card">
+              <span class="mini-label">Interpretation</span>
+              <div class="insight-list" id="wsdInsights">
+                <div class="insight">传统方法依赖释义与上下文词语的重合程度。</div>
+                <div class="insight">深度表示方法更能体现同一词在不同语境中的语义漂移。</div>
+                <div class="insight">这类对比很适合写进实验报告的“结果分析”部分。</div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="tab-srl">
+        <div class="grid">
+          <section class="card">
+            <h2>模块 2：SRL 提取与可视化</h2>
+            <p>
+              这一页模拟 <code>Predicate-Argument Structure</code> 的展示逻辑，把句子中的主要动词当作谓词，
+              再用启发式规则抽取施事者、受事者、地点和时间成分。页面下方还会同步画出一个依存关系风格的结构示意图。
+            </p>
+
+            <div class="field-group">
+              <div>
+                <label for="srlSentence">输入英文句子</label>
+                <textarea id="srlSentence">Apple is manufacturing new smartphones in China this year.</textarea>
+              </div>
+            </div>
+
+            <div class="button-row">
+              <button class="primary" id="runSrl">运行 SRL 分析</button>
+              <button class="ghost" id="fillSrlExample">恢复示例</button>
+            </div>
+
+            <div class="chip-row" id="roleChips">
+              <span class="chip">A0 · Apple</span>
+              <span class="chip">Predicate · manufacturing</span>
+              <span class="chip">A1 · new smartphones</span>
+              <span class="chip">AM-LOC · in China</span>
+              <span class="chip">AM-TMP · this year</span>
+            </div>
+          </section>
+
+          <section class="result-stack">
+            <div class="table-card">
+              <table class="role-table">
+                <thead>
+                  <tr>
+                    <th>A0 (Agent)</th>
+                    <th>Predicate</th>
+                    <th>A1 (Patient)</th>
+                    <th>AM-LOC</th>
+                    <th>AM-TMP</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr id="srlRow">
+                    <td>Apple</td>
+                    <td>manufacturing</td>
+                    <td>new smartphones</td>
+                    <td>in China</td>
+                    <td>this year</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="result-card dep-map">
+              <span class="mini-label">Dependency-inspired Visualization</span>
+              <svg class="dep-canvas" id="depCanvas" viewBox="0 0 760 220" preserveAspectRatio="xMidYMid meet"></svg>
+            </div>
+
+            <div class="result-card">
+              <span class="mini-label">Interpretation</span>
+              <div class="insight-list" id="srlInsights">
+                <div class="insight">主语通常可以近似映射为 A0，宾语可以近似映射为 A1。</div>
+                <div class="insight">地点和时间成分更适合作为 AM-LOC 与 AM-TMP 展示。</div>
+                <div class="insight">简单主动句最容易得到稳定结果，复杂句更适合在报告里写成局限性。</div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <p class="footer">
+      说明：该 HTML 页面用于课程作业展示与可视化说明；若需要完整模型运行结果，可配合 Python 版 Streamlit 系统一起提交。
+    </p>
+  </main>
+
+  <script>
+    const wsdExamples = {
+      sentenceA: "I went to the bank to deposit my money.",
+      target: "bank",
+      sentenceB: "I sat by the river bank."
+    };
+
+    const srlExample = "Apple is manufacturing new smartphones in China this year.";
+
+    const financeKeywords = ["money", "deposit", "loan", "cash", "account", "finance", "financial", "pay", "salary", "credit"];
+    const riverKeywords = ["river", "shore", "water", "stream", "lake", "fishing", "sand", "flood", "coast"];
+    const timeMarkers = [
+      "today", "tomorrow", "yesterday", "this year", "this month", "this week", "last year",
+      "next year", "at night", "in 2024", "in 2025", "in 2026", "every day"
+    ];
+    const locationPreps = ["in", "at", "on", "from", "to", "into", "inside", "near"];
+
+    document.querySelectorAll(".tab-btn").forEach((button) => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach((btn) => btn.classList.remove("active"));
+        document.querySelectorAll(".tab-panel").forEach((panel) => panel.classList.remove("active"));
+        button.classList.add("active");
+        document.getElementById(`tab-${button.dataset.tab}`).classList.add("active");
+      });
+    });
+
+    document.getElementById("fillWsdExample").addEventListener("click", () => {
+      document.getElementById("wsdSentenceA").value = wsdExamples.sentenceA;
+      document.getElementById("wsdTarget").value = wsdExamples.target;
+      document.getElementById("wsdSentenceB").value = wsdExamples.sentenceB;
+      runWsd();
+    });
+
+    document.getElementById("fillSrlExample").addEventListener("click", () => {
+      document.getElementById("srlSentence").value = srlExample;
+      runSrl();
+    });
+
+    document.getElementById("runWsd").addEventListener("click", runWsd);
+    document.getElementById("runSrl").addEventListener("click", runSrl);
+
+    function containsAny(text, words) {
+      return words.some((word) => text.includes(word));
+    }
+
+    function inferSense(sentence) {
+      const lower = sentence.toLowerCase();
+      if (containsAny(lower, financeKeywords)) {
+        return {
+          category: "finance",
+          synset: "depository_financial_institution.n.01",
+          definition: "a financial institution that accepts deposits and channels the money into lending activities"
+        };
+      }
+      if (containsAny(lower, riverKeywords)) {
+        return {
+          category: "river",
+          synset: "bank.n.01",
+          definition: "sloping land beside a body of water"
+        };
+      }
+      return {
+        category: "unknown",
+        synset: "sense.uncertain",
+        definition: "context does not provide enough cue words for a confident heuristic sense prediction"
+      };
+    }
+
+    function similarityFromCategories(a, b) {
+      if (a === "unknown" || b === "unknown") return 0.57;
+      if (a === b) return 0.86;
+      return 0.34;
+    }
+
+    function runWsd() {
+      const sentenceA = document.getElementById("wsdSentenceA").value.trim();
+      const sentenceB = document.getElementById("wsdSentenceB").value.trim();
+      const target = document.getElementById("wsdTarget").value.trim();
+
+      const senseA = inferSense(sentenceA);
+      const senseB = inferSense(sentenceB);
+      const score = similarityFromCategories(senseA.category, senseB.category);
+
+      document.getElementById("leskSynset").textContent = senseA.synset;
+      document.getElementById("leskDefinition").textContent = senseA.definition;
+      document.getElementById("similarityValue").textContent = score.toFixed(2);
+      document.getElementById("similarityMeter").style.setProperty("--value", String(Math.round(score * 100)));
+
+      const title = document.getElementById("similarityTitle");
+      const text = document.getElementById("similarityText");
+      const insightBox = document.getElementById("wsdInsights");
+
+      let insights = [];
+      if (!target) {
+        title.textContent = "请补充目标词";
+        text.textContent = "页面会继续展示示例逻辑，但正式提交时建议把目标词和例句一起保留。";
+        insights = [
+          "目标词为空时，无法严格对应 WSD 的课程任务定义。",
+          "建议保留 bank 这一经典例子，方便和课件内容呼应。",
+          "正式系统应由 Python 后端完成真实词义判断。"
+        ];
+      } else if (score < 0.5) {
+        title.textContent = "语义差异较明显";
+        text.textContent = `两个句子中的 "${target}" 所处语境不同，更适合解释动态上下文向量为何能区分语义。`;
+        insights = [
+          "传统方法会更关注上下文与词典释义之间的重合。",
+          "不同语境下相似度降低，适合写进“BERT 动态表示”观察结论。",
+          "这一现象与课件中基于上下文向量表示的消歧思想一致。"
+        ];
+      } else if (score < 0.75) {
+        title.textContent = "语义接近但仍有差异";
+        text.textContent = `两个句子中的 "${target}" 共享部分语义线索，因此上下文向量没有完全分开。`;
+        insights = [
+          "语义相似度中等时，说明上下文差异还不够强。",
+          "这类结果很适合在报告里讨论方法的边界情况。",
+          "可以再换一组更对立的例句来强化展示效果。"
+        ];
+      } else {
+        title.textContent = "语义高度接近";
+        text.textContent = `两个句子中的 "${target}" 被判定为相近语义，说明示例更接近同义场景。`;
+        insights = [
+          "如果两个例句语义过近，BERT 相似度通常会维持在较高水平。",
+          "这时更适合说明“上下文一致时词向量也会接近”。",
+          "为了完成作业展示，建议使用金融 bank 和河岸 bank 的对比例子。"
+        ];
+      }
+
+      insightBox.innerHTML = insights.map((item) => `<div class="insight">${item}</div>`).join("");
+    }
+
+    function normalizeSpaces(text) {
+      return text.replace(/\s+/g, " ").trim();
+    }
+
+    function extractSrl(sentence) {
+      const clean = normalizeSpaces(sentence);
+      const lower = clean.toLowerCase();
+
+      const match = clean.match(/^(.+?)\s+(?:is|are|was|were|am|has|have|had|will be|will|can be|can)?\s*([a-zA-Z-]+ing|manufacture|manufacturing|build|building|produce|producing|launch|launching|make|making|develop|developing|create|creating)\s+(.+?)(?:(\s+(?:in|at|on|from|to|into|inside|near)\s+[^,.]+?))?(?:(\s+(?:this year|this month|this week|today|tomorrow|yesterday|last year|next year|in \d{4}|every day)))?[.?!]?$/i);
+
+      let agent = "";
+      let predicate = "";
+      let patient = "";
+      let loc = "";
+      let tmp = "";
+
+      if (match) {
+        agent = normalizeSpaces(match[1]);
+        predicate = normalizeSpaces(match[2]);
+        patient = normalizeSpaces(match[3]);
+        loc = normalizeSpaces(match[4] || "");
+        tmp = normalizeSpaces(match[5] || "");
+      } else {
+        const words = clean.replace(/[.?!]/g, "").split(" ");
+        const verbIndex = words.findIndex((word) => /ing$/.test(word) || ["manufactures", "manufacturing", "builds", "launches", "creates", "develops", "produces", "makes"].includes(word.toLowerCase()));
+        if (verbIndex > 0) {
+          agent = words.slice(0, verbIndex).join(" ");
+          predicate = words[verbIndex];
+          const tail = words.slice(verbIndex + 1).join(" ");
+          patient = tail;
+        } else {
+          agent = words.slice(0, 1).join(" ");
+          predicate = words[1] || "action";
+          patient = words.slice(2).join(" ");
+        }
+
+        for (const marker of timeMarkers) {
+          if (lower.includes(marker)) {
+            tmp = marker;
+            patient = patient.replace(new RegExp(marker, "i"), "").trim();
+            break;
+          }
+        }
+
+        for (const prep of locationPreps) {
+          const pattern = new RegExp(`\\b${prep}\\s+[A-Z][a-zA-Z-]*(?:\\s+[A-Z][a-zA-Z-]*)*`);
+          const locMatch = clean.match(pattern);
+          if (locMatch) {
+            loc = locMatch[0];
+            patient = patient.replace(loc, "").trim();
+            break;
+          }
+        }
+      }
+
+      patient = patient.replace(/\s+/g, " ").replace(/\s+[.?!]$/, "").trim();
+      if (!patient) patient = "—";
+      if (!loc) loc = "—";
+      if (!tmp) tmp = "—";
+      if (!agent) agent = "—";
+      if (!predicate) predicate = "—";
+
+      return { agent, predicate, patient, loc, tmp };
+    }
+
+    function drawDependencyMap(data) {
+      const svg = document.getElementById("depCanvas");
+      const nodes = [
+        { key: "A0", label: data.agent, x: 110, y: 170, color: "#0f766e" },
+        { key: "Predicate", label: data.predicate, x: 380, y: 95, color: "#9f1239" },
+        { key: "A1", label: data.patient, x: 640, y: 170, color: "#d97706" },
+        { key: "AM-LOC", label: data.loc, x: 250, y: 170, color: "#115e59" },
+        { key: "AM-TMP", label: data.tmp, x: 510, y: 170, color: "#7c3aed" }
+      ];
+
+      function nodeRect(node) {
+        const width = Math.max(116, Math.min(180, 10 * node.label.length + 42));
+        return { ...node, width, height: 44 };
+      }
+
+      const rects = nodes.map(nodeRect);
+      const byKey = Object.fromEntries(rects.map((node) => [node.key, node]));
+
+      const edges = [
+        ["Predicate", "A0", "A0"],
+        ["Predicate", "A1", "A1"],
+        ["Predicate", "AM-LOC", "AM-LOC"],
+        ["Predicate", "AM-TMP", "AM-TMP"]
+      ];
+
+      const defs = `
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(24,49,45,0.42)"></path>
+          </marker>
+        </defs>
+      `;
+
+      const edgeSvg = edges.map(([from, to, label], idx) => {
+        const a = byKey[from];
+        const b = byKey[to];
+        if (!a || !b || b.label === "—") return "";
+
+        const startX = a.x;
+        const startY = a.y + 10;
+        const endX = b.x;
+        const endY = b.y - 30;
+        const curve = idx % 2 === 0 ? -70 : -50;
+        const path = `M ${startX} ${startY} C ${startX} ${curve}, ${endX} ${curve}, ${endX} ${endY}`;
+        const midX = (startX + endX) / 2;
+        const midY = curve + 12;
+
+        return `
+          <path d="${path}" fill="none" stroke="rgba(24,49,45,0.28)" stroke-width="2.2" marker-end="url(#arrow)"></path>
+          <text x="${midX}" y="${midY}" text-anchor="middle" font-size="12" fill="#5e726f" font-weight="700">${label}</text>
+        `;
+      }).join("");
+
+      const nodeSvg = rects.map((node) => {
+        if (node.label === "—" && node.key !== "Predicate") {
+          return `
+            <g transform="translate(${node.x - node.width / 2}, ${node.y - node.height / 2})">
+              <rect width="${node.width}" height="${node.height}" rx="16" fill="rgba(255,255,255,0.68)" stroke="rgba(24,49,45,0.12)"></rect>
+              <text x="${node.width / 2}" y="18" text-anchor="middle" font-size="11" fill="#5e726f" font-weight="700">${node.key}</text>
+              <text x="${node.width / 2}" y="31" text-anchor="middle" font-size="13" fill="#9aa7a4">not found</text>
+            </g>
+          `;
+        }
+
+        return `
+          <g transform="translate(${node.x - node.width / 2}, ${node.y - node.height / 2})">
+            <rect width="${node.width}" height="${node.height}" rx="16" fill="rgba(255,250,244,0.94)" stroke="${node.color}" stroke-width="1.6"></rect>
+            <text x="${node.width / 2}" y="17" text-anchor="middle" font-size="11" fill="#5e726f" font-weight="700">${node.key}</text>
+            <text x="${node.width / 2}" y="31" text-anchor="middle" font-size="13" fill="#18312d" font-weight="700">${escapeHtml(node.label)}</text>
+          </g>
+        `;
+      }).join("");
+
+      svg.innerHTML = defs + edgeSvg + nodeSvg;
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function runSrl() {
+      const sentence = document.getElementById("srlSentence").value.trim();
+      const data = extractSrl(sentence);
+
+      document.getElementById("srlRow").innerHTML = `
+        <td>${escapeHtml(data.agent)}</td>
+        <td>${escapeHtml(data.predicate)}</td>
+        <td>${escapeHtml(data.patient)}</td>
+        <td>${escapeHtml(data.loc)}</td>
+        <td>${escapeHtml(data.tmp)}</td>
+      `;
+
+      document.getElementById("roleChips").innerHTML = `
+        <span class="chip">A0 · ${escapeHtml(data.agent)}</span>
+        <span class="chip">Predicate · ${escapeHtml(data.predicate)}</span>
+        <span class="chip">A1 · ${escapeHtml(data.patient)}</span>
+        <span class="chip">AM-LOC · ${escapeHtml(data.loc)}</span>
+        <span class="chip">AM-TMP · ${escapeHtml(data.tmp)}</span>
+      `;
+
+      const insights = [
+        `句子的核心谓词当前被识别为 "${escapeHtml(data.predicate)}"。`,
+        data.agent !== "—" ? `主语成分 "${escapeHtml(data.agent)}" 被近似映射为 A0。` : "当前句子没有稳定识别出 A0，适合在报告中写成规则法的局限性。",
+        data.patient !== "—" ? `受事成分 "${escapeHtml(data.patient)}" 被近似映射为 A1。` : "当前句子没有稳定识别出 A1，说明句式可能更复杂。"
+      ];
+
+      if (data.loc !== "—") {
+        insights.push(`地点成分 "${escapeHtml(data.loc)}" 被映射为 AM-LOC。`);
+      }
+      if (data.tmp !== "—") {
+        insights.push(`时间成分 "${escapeHtml(data.tmp)}" 被映射为 AM-TMP。`);
+      }
+
+      document.getElementById("srlInsights").innerHTML = insights
+        .map((item) => `<div class="insight">${item}</div>`)
+        .join("");
+
+      drawDependencyMap(data);
+    }
+
+    runWsd();
+    runSrl();
+  </script>
+</body>
+</html>

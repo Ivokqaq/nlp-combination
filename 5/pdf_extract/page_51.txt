@@ -1,0 +1,43 @@
+===== PAGE 51 PYPDF =====
+༅
+▶Սᄝ༯ऎႵ҂๝ეၬ༅
+োູ
+ეၬোљč5&.103"-a$0/5*/(&/$:a
+$0.1"3*40/a&91"/4*0/Ď
+ओሰ
+	
+ (VBOH[IPV IBT B XJEF XBUFS BSFB XJUI NBOZ SJWFST BOE
+XBUFS TZTUFNT TJODF JU JT MPDBUFE JO UIF XBUFSSJDI BSFB PG
+TPVUIFSO $IJOB
+	
+ 4IF IBT CFFO MJWJOH JO TJODF TIF HSBEVBUFE GSPN 4IBOHIBJ
+6OJWFSTJUZ PG 'JOBODF BOE &DPOPNJDT
+༢đඋႿ
+$0/5*/(&/$: ეၬোљĠᄝओሰ 	
+ ᇏᄵ൞ 5&.103"- ეၬ
+োљb
+▶ࢤ
+ൔൌགྷb
+༢đ
+༢b
+
+===== PAGE 51 FITZ =====
+基于句法特征构建的显式篇章分析
+▶由于部分显式连接词在不同语境下具有不同语义，显式篇章分析
+的重点在于对显式连接词进行消歧，并将每一连接词分类为
+PDTB 标注的四个一级语义类别（TEMPORAL、CONTINGENCY、
+COMPARISON、EXPANSION）3
+例如：下述两个包含since 的句子
+(1) Guangzhou has a wide water area with many rivers and
+water systems since it is located in the water-rich area of
+southern China.
+(2) She has been living in since she graduated from Shanghai
+University of Finance and Economics.
+显式连接词“Since”在句子(1) 中表示因果关系，属于
+CONTINGENCY 语义类别；在句子(2) 中则是TEMPORAL 语义
+类别。
+▶显式篇章分析关注的主要问题即为将连接篇章中话语的显式连接
+词正确划分为其所属的语义类别，通常以文本分类的方式实现。
+3TEMPORAL 表示时间关系，CONTINGENCY 表示因果关系，
+COMPARISON 表示比较关系，EXPANSION 表示进一步阐述或解释关系。
+

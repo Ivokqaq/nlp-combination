@@ -1,0 +1,12 @@
+===== PAGE 37 PYPDF =====
+۩ٳ
+▶ https://github.com/PKU-TANGENT/NeuralEDUSeg
+▶ ඔऌဢЧൕ২ https://github.com/PKU-TANGENT/
+NeuralEDUSeg/tree/master/data/rst
+
+===== PAGE 37 FITZ =====
+基于循环神经网络的话语分割
+▶https://github.com/PKU-TANGENT/NeuralEDUSeg
+▶数据样本示例https://github.com/PKU-TANGENT/
+NeuralEDUSeg/tree/master/data/rst
+

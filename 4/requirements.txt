@@ -1,0 +1,7 @@
+streamlit>=1.33
+nltk>=3.8
+spacy>=3.7
+transformers>=4.39
+torch>=2.2
+scikit-learn>=1.4
+pandas>=2.2
