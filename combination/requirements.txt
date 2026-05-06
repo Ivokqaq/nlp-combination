@@ -1,0 +1,13 @@
+streamlit
+pandas
+numpy
+matplotlib
+scikit-learn
+nltk
+spacy
+gensim
+transformers
+torch
+jieba
+plotly
+pyvis
