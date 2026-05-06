@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Week 6 篇章分析与指代消解系统</title>
+  <style>
+    :root {
+      --bg: #f7f4ee;
+      --paper: #fffdfa;
+      --ink: #1f2937;
+      --muted: #5b6472;
+      --line: #d8d2c8;
+      --accent: #a63d40;
+      --accent-2: #2f6f6f;
+      --accent-3: #dba159;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(180deg, #efe8dc 0%, var(--bg) 18%, #faf8f3 100%);
+      color: var(--ink);
+      line-height: 1.7;
+    }
+
+    .container {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 64px;
+    }
+
+    .hero {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 28px 30px;
+      box-shadow: 0 18px 48px rgba(92, 77, 60, 0.08);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: #f3e6d1;
+      color: #7a4d1d;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    h1, h2, h3 {
+      margin: 0 0 12px;
+      line-height: 1.25;
+    }
+
+    h1 {
+      font-size: 38px;
+      margin-top: 14px;
+    }
+
+    h2 {
+      font-size: 26px;
+      margin-top: 36px;
+      color: #213547;
+    }
+
+    h3 {
+      font-size: 20px;
+      color: #284b63;
+    }
+
+    p, li {
+      color: var(--ink);
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+      margin-top: 22px;
+    }
+
+    .card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px 18px 16px;
+      box-shadow: 0 10px 28px rgba(92, 77, 60, 0.05);
+    }
+
+    .card.edu {
+      border-top: 6px solid var(--accent-3);
+    }
+
+    .card.pdtb {
+      border-top: 6px solid var(--accent-2);
+    }
+
+    .card.coref {
+      border-top: 6px solid var(--accent);
+    }
+
+    .section {
+      margin-top: 28px;
+      background: rgba(255, 253, 250, 0.88);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 24px;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #ede8df;
+      color: #5b5142;
+      font-size: 13px;
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    figure {
+      margin: 0;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 10px 20px rgba(92, 77, 60, 0.06);
+    }
+
+    figure img {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: #f4efe7;
+    }
+
+    figcaption {
+      padding: 10px 12px 12px;
+      font-size: 14px;
+      color: var(--muted);
+      background: #fffdfa;
+    }
+
+    .conclusion {
+      border-left: 8px solid var(--accent);
+      background: #fff8f3;
+    }
+
+    .footer {
+      margin-top: 28px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <section class="hero">
+      <span class="eyebrow">Week 6 随堂 Vibe 实验</span>
+      <h1>篇章分析与指代消解系统</h1>
+      <p class="muted">
+        本项目使用 <strong>Python + Streamlit + spaCy + requests + fastcoref</strong>
+        实现了一个面向课程作业的综合性交互式 Web 系统，用于展示话语分割、浅层篇章关系提取与指代消解三类核心任务。
+      </p>
+      <div>
+        <span class="tag">EDU Segmentation</span>
+        <span class="tag">PDTB Explicit Relation</span>
+        <span class="tag">Coreference Resolution</span>
+        <span class="tag">Streamlit</span>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="card edu">
+        <h3>模块 1：话语分割</h3>
+        <p>对比规则基线与 NeuralEDUSeg 真实样本，观察 EDU 边界预测与真实标注之间的差异。</p>
+      </article>
+      <article class="card pdtb">
+        <h3>模块 2：浅层篇章关系</h3>
+        <p>识别显式连接词，标注 PDTB 顶级语义类别，并对 Arg1 / Arg2 做简化抽取与展示。</p>
+      </article>
+      <article class="card coref">
+        <h3>模块 3：指代消解</h3>
+        <p>使用 coreference clusters 对文本中的 mentions 进行高亮聚类，直观展示实体等价类。</p>
+      </article>
+    </section>
+
+    <section class="section">
+      <h2>实验设计与实现要点</h2>
+      <ul>
+        <li>模块 1 采用“规则基线 vs 数据集真实标注”的双栏对比形式，便于观察简单规则方法与真实 EDU 切分之间的偏差。</li>
+        <li>模块 2 以显式连接词为中心，构建了一个简化版 PDTB 风格关系分析器，支持连接词识别、类别映射与论据切分。</li>
+        <li>模块 3 优先调用 fastcoref 执行真实模型推理，并在依赖不可用时提供启发式降级方案，保证系统可运行。</li>
+        <li>系统对网络请求失败、模型缺失、依赖初始化失败等情况进行了异常处理与提示，提升了课程展示场景下的稳定性。</li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>运行截图</h2>
+      <p class="muted">以下截图展示了系统页面的实际运行效果，可用于作业提交中的网页成果展示。</p>
+      <div class="gallery">
+        <figure><img src="1.png" alt="系统截图 1"><figcaption>截图 1：系统首页与模块 1 页面</figcaption></figure>
+        <figure><img src="2.png" alt="系统截图 2"><figcaption>截图 2：模块运行效果</figcaption></figure>
+        <figure><img src="3.png" alt="系统截图 3"><figcaption>截图 3：模块运行效果</figcaption></figure>
+        <figure><img src="4.png" alt="系统截图 4"><figcaption>截图 4：模块运行效果</figcaption></figure>
+        <figure><img src="5.png" alt="系统截图 5"><figcaption>截图 5：模块运行效果</figcaption></figure>
+        <figure><img src="6.png" alt="系统截图 6"><figcaption>截图 6：模块运行效果</figcaption></figure>
+        <figure><img src="7.png" alt="系统截图 7"><figcaption>截图 7：模块运行效果</figcaption></figure>
+        <figure><img src="8.png" alt="系统截图 8"><figcaption>截图 8：模块运行效果</figcaption></figure>
+        <figure><img src="9.png" alt="系统截图 9"><figcaption>截图 9：模块运行效果</figcaption></figure>
+        <figure><img src="10.png" alt="系统截图 10"><figcaption>截图 10：模块运行效果</figcaption></figure>
+        <figure><img src="11.png" alt="系统截图 11"><figcaption>截图 11：模块运行效果</figcaption></figure>
+        <figure><img src="12.png" alt="系统截图 12"><figcaption>截图 12：模块运行效果</figcaption></figure>
+      </div>
+    </section>
+
+    <section class="section conclusion">
+      <h2>实验结论</h2>
+      <ul>
+        <li>话语分割实验表明，基于标点和连接词的规则基线可以捕捉一部分明显的 EDU 边界，但面对复杂从句、长距离依赖和嵌套结构时，容易出现过切或漏切。</li>
+        <li>浅层篇章关系实验表明，显式连接词可以有效触发篇章关系识别，但连接词本身存在语义歧义，例如 <code>since</code> 既可能表示时间关系，也可能表示因果关系，说明显式连接词消歧是实际工程中的关键难点。</li>
+        <li>指代消解实验表明，现代神经模型能够较好地处理跨句回指和实体聚类问题，但复杂代词、多实体竞争和上下文不足时仍可能出现错误链接。</li>
+        <li>整体来看，本实验成功将课程中的 EDU、PDTB 显式关系和 Coreference Resolution 理论转化为可交互、可观察的系统功能，验证了课堂理论与工程实现之间的对应关系。</li>
+      </ul>
+    </section>
+
+    <div class="footer">
+      Week 6 篇章分析与指代消解系统 · 静态展示页
+    </div>
+  </div>
+</body>
+</html>
